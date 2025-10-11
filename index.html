@@ -3,579 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PERMASALAHAN PRODUKSI</title>
-    <!-- Tailwind CSS for styling -->
+    <!-- Mengubah judul tab browser -->
+    <title>PT. Sahabat Intim Plasindo</title>
+    <!-- Memuat Tailwind CSS untuk styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Konfigurasi Tailwind untuk font Inter dan CSS Kustom -->
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-        }
-        /* Custom scrollbar for better aesthetics */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px; /* For horizontal scrollbar */
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-        /* Style for preventing background scroll when modal is open */
-        .modal-open {
-            overflow: hidden;
+            overflow-x: hidden; /* Mencegah scroll horizontal */
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800">
+<body class="bg-white">
 
-    <div id="app" class="min-h-screen flex flex-col items-center justify-center p-4">
+    <!-- Kontainer Utama: Latar Belakang Putih -->
+    <div class="min-h-screen bg-white relative flex flex-col justify-center pb-16">
 
-        <!-- Role Selection View -->
-        <div id="role-selection-view" class="w-full max-w-md text-center">
-            <div class="bg-white p-8 rounded-xl shadow-lg">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTo8y1TczYtwOx2zeS3RJVtM6Eayy6CQZuf6Q&s" alt="Logo Shinpo" class="mx-auto mb-6 h-20 w-auto">
-                <h1 class="text-2xl md:text-2xl font-bold text-slate-1000 mb-2">PT. Sahabat Intim Plasindo</h1>
-                <p class="text-slate-500 mb-8">Silakan pilih peran Anda untuk melanjutkan.</p>
-                <div class="space-y-4">
-                    <button id="admin-role-btn" class="hidden lg:block w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition-colors duration-300 shadow-sm">Masuk sebagai Admin</button>
-                    <button id="operator-role-btn" class="w-full bg-slate-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-slate-700 transition-colors duration-300 shadow-sm">Masuk sebagai Operator</button>
+        <!-- Navigasi Bar / Header -->
+        <!-- Z-index diubah dari z-10 menjadi z-50 agar tombol selalu berada di atas konten -->
+        <header class="absolute top-0 left-0 right-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 z-50">
+            <nav class="flex items-center justify-between w-full">
+                <!-- Logo SHINPO (KIRI) -->
+                <div class="flex items-center">
+                    <!-- URL Logo SHINPO menggunakan placeholder dengan warna sesuai logo asli -->
+                    <img 
+                        src="https://www.shinpo.co.id/wp-content/uploads/2019/09/shinpo-logo-mobile.png"
+                        class="h-10 w-auto"
+                        alt="Logo SHINPO"
+                        onerror="this.onerror=null;this.src='https://placehold.co/120x40/FF0000/FFFFFF?text=SHINPO'"
+                    >
                 </div>
-                 <p id="connection-status" class="text-xs text-slate-400 mt-8"></p>
-            </div>
-        </div>
 
-        <!-- Admin Login Modal -->
-        <div id="admin-login-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm">
-                <h3 class="text-lg font-bold text-slate-800 mb-4">Login Admin Shinpo</h3>
-                <form id="admin-login-form">
-                    <div class="mb-4">
-                        <label for="username" class="block text-sm font-medium text-slate-600 mb-1">Username</label>
-                        <input type="text" id="username" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                    </div>
-                    <div class="mb-6">
-                        <label for="password" class="block text-sm font-medium text-slate-600 mb-1">Password</label>
-                        <input type="password" id="password" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                    </div>
-                     <p id="login-error" class="text-red-500 text-sm mb-4 hidden">Username atau password salah.</p>
-                    <div class="flex justify-end space-x-3">
-                        <button type="button" id="login-cancel-btn" class="bg-slate-200 text-slate-700 font-semibold py-2 px-4 rounded-lg hover:bg-slate-300">Batal</button>
-                        <button type="submit" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-indigo-700">Login</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Admin View -->
-        <div id="admin-view" class="hidden w-full max-w-6xl mx-auto p-4 md:p-6">
-            <div class="flex justify-between items-center mb-6">
-                 <h1 class="text-3xl font-bold text-slate-800">Dashboard Admin Shinpo</h1>
-                 <button id="admin-logout-btn" class="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600 transition-colors">Keluar</button>
-            </div>
-           
-            <!-- Form for adding/editing items -->
-            <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
-                <h2 id="form-title" class="text-2xl font-semibold mb-4">Tambah Barang Baru</h2>
-                <form id="item-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <input type="hidden" id="item-id">
-                    <div>
-                        <label for="kode-barang" class="block text-sm font-medium text-slate-600 mb-1">Kode Barang</label>
-                        <input type="text" id="kode-barang" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                    </div>
-                    <div>
-                        <label for="nama-barang" class="block text-sm font-medium text-slate-600 mb-1">Nama Barang</label>
-                        <input type="text" id="nama-barang" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                    </div>
-                    <div class="md:col-span-2">
-                        <label for="permasalahan" class="block text-sm font-medium text-slate-600 mb-1">Permasalahan</label>
-                        <textarea id="permasalahan" rows="4" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"></textarea>
-                    </div>
-                    <div class="md:col-span-2">
-                        <label for="gambar-barang" class="block text-sm font-medium text-slate-600 mb-1">Gambar Barang</label>
-                        <input type="file" id="gambar-barang" accept="image/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
-                        <img id="image-preview" src="" alt="Pratinjau Gambar" class="hidden mt-4 max-h-40 rounded-lg"/>
-                    </div>
-                    <div class="md:col-span-2 flex justify-end space-x-3">
-                         <button type="button" id="cancel-edit-btn" class="hidden bg-slate-200 text-slate-700 font-bold py-2 px-6 rounded-lg hover:bg-slate-300 transition">Batal</button>
-                         <button type="submit" id="submit-btn" class="bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-indigo-700 transition">Simpan</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- List of items -->
-            <div id="item-list-container" class="bg-white p-6 rounded-xl shadow-lg">
-                 <h2 class="text-2xl font-semibold mb-4">Daftar Barang Bermasalahan</h2>
-                 <div id="item-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Item cards will be injected here -->
-                    <div id="loading-spinner-admin" class="md:col-span-2 lg:col-span-3 text-center py-10">
-                        <p class="text-slate-500">Menghubungkan ke database...</p>
-                    </div>
-                 </div>
-            </div>
-        </div>
-
-        <!-- Operator View -->
-        <div id="operator-view" class="hidden w-full max-w-4xl mx-auto">
-             <div class="bg-white p-8 rounded-xl shadow-lg text-center flex flex-col max-h-[90vh]">
-                 <h1 class="text-3xl font-bold text-slate-800 mb-2">Pencarian Barang</h1>
-                 <p class="text-slate-500 mb-6">Masukkan Kode Barang untuk melihat detail permasalahan.</p>
-
-                <div class="relative mb-6">
-                    <input type="text" id="search-input" placeholder="Ketik Kode Barang..." class="w-full px-4 py-3 pr-12 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition text-lg">
-                     <button id="search-btn" class="absolute inset-y-0 right-0 flex items-center px-4 bg-indigo-600 text-white rounded-r-lg hover:bg-indigo-700">
-                        Cari
+                <!-- Kontainer untuk Tombol Burger dan Menu -->
+                <div class="relative">
+                    <!-- Tombol Burger Menu (KANAN) - Selalu terlihat (tidak ada sm:hidden) -->
+                    <button 
+                        id="menuButton"
+                        class="p-2 text-blue-900 border border-blue-900 rounded-lg hover:bg-blue-100 transition duration-150"
+                        aria-label="Toggle Menu"
+                        aria-expanded="false"
+                    >
+                        <!-- Ikon SVG Hamburger (Menu) -->
+                        <svg id="iconMenu" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        </svg>
+                        <!-- Ikon SVG Tutup (X) - Tersembunyi secara default -->
+                        <svg id="iconClose" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
                     </button>
+
+                    <!-- OPSI MENU (TERSEMBUNYI SECARA DEFAULT) -->
+                    <div id="navMenu" class="hidden absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-xl py-2 z-20">
+                        <!-- Tombol Masuk Sebagai Pengguna - WARNA DIUBAH MENJADI MERAH (SAMA DENGAN ADMIN) -->
+                        <a href="#" class="block mx-2 my-1 px-1 py-2 bg-red-500 text-center text-white rounded-lg hover:bg-red-600 transition duration-300 shadow-md">
+                            Masuk Sebagai Pengguna
+                        </a>
+                        <div class="border-t border-gray-200 my-1"></div>
+                        <!-- Tombol Masuk Sebagai Admin -->
+                        <a href="#" class="block mx-2 my-1 px-3 py-2 bg-red-500 text-center text-white rounded-lg hover:bg-red-600 transition duration-300 shadow-md">
+                            Masuk Sebagai Admin
+                        </a>
+                    </div>
                 </div>
                 
-                <div id="search-result" class="flex space-x-4 overflow-x-auto pb-4">
-                    <!-- Search result will be displayed here -->
+            </nav>
+        </header>
+
+        <!-- Bagian Hero/Konten Utama (Dibuat center vertikal) -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="flex flex-col items-center justify-center pt-40"> <!-- pt-40 ditambahkan untuk memberi ruang lebih di atas -->
+                
+                <!-- Teks Kiri (Judul dan Tombol) - Sekarang menjadi lebar penuh (w-full) -->
+                <div class="w-full text-center mb-12 lg:mb-0">
+                    <!-- Jarak diubah dari mb-6 menjadi mb-3 (lebih rapat) -->
+                    <h1 class="text-2xl sm:text-5xl lg:text-6xl font-extrabold leading-tight text-blue-900 mb-3">
+                        Solusi Plastik Terbaik untuk Kebutuhan Rumah Tangga dan Industri Anda
+                    </h1>
+                    <!-- Jarak diubah dari mb-10 menjadi mb-8 (lebih rapat) -->
+                    <p class="text-xl sm:text-1xl font-medium text-blue-900 opacity-90 mb-8">
+                        PT. Sahabat Intim Plasindo, Inovasi dalam Setiap Produk Plastik.
+                    </p>
                 </div>
-
-                <button id="operator-logout-btn" class="mt-auto pt-6 bg-transparent text-slate-600 font-semibold py-2 px-5 rounded-lg hover:bg-slate-100 transition-colors">Kembali</button>
+                
             </div>
-        </div>
-        
-        <!-- Image Zoom Modal -->
-        <div id="image-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
-            <div class="relative bg-white p-4 rounded-xl shadow-2xl max-w-4xl max-h-[90vh] overflow-auto">
-                <button id="close-modal-btn" class="absolute top-2 right-2 bg-white rounded-full p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-                <img id="modal-img" src="" alt="Detail Gambar Barang" class="w-auto h-auto max-w-full max-h-[80vh] object-contain transition-transform duration-300 ease-in-out">
-                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 bg-black bg-opacity-50 p-2 rounded-lg">
-                    <button id="zoom-in-btn" class="text-white p-2 rounded-full hover:bg-white/20">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
-                    </button>
-                    <button id="zoom-out-btn" class="text-white p-2 rounded-full hover:bg-white/20">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Custom Alert/Confirm Modal -->
-        <div id="confirm-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm">
-                <h3 id="confirm-title" class="text-lg font-bold text-slate-800 mb-2">Konfirmasi</h3>
-                <p id="confirm-message" class="text-slate-600 mb-6">Apakah Anda yakin?</p>
-                <div class="flex justify-end space-x-3">
-                    <button id="confirm-cancel" class="bg-slate-200 text-slate-700 font-semibold py-2 px-4 rounded-lg hover:bg-slate-300">Batal</button>
-                    <button id="confirm-ok" class="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600">Ya, Hapus</button>
-                </div>
-            </div>
-        </div>
+        </main>
 
-    </div>
+        <!-- JavaScript untuk mengontrol menu burger (SUDAH BERFUNGSI) -->
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const menuButton = document.getElementById('menuButton');
+                const navMenu = document.getElementById('navMenu');
+                const iconMenu = document.getElementById('iconMenu');
+                const iconClose = document.getElementById('iconClose');
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-
-        // IMPORTANT: Ganti dengan konfigurasi Firebase Anda sendiri
-        const firebaseConfig = {
-            apiKey: "AIzaSyDD_xUHejyzudsyMmnNz6f6LkKZ_8tWZIs",
-            authDomain: "permasalahan-barang.firebaseapp.com",
-            projectId: "permasalahan-barang",
-            storageBucket: "permasalahan-barang.firebasestorage.app",
-            messagingSenderId: "203416818281",
-            appId: "1:203416818281:web:f887fc914e267b787c88f8"
-        };
-        
-        const USE_FIREBASE = firebaseConfig.projectId && firebaseConfig.projectId !== "YOUR_PROJECT_ID";
-        
-        let db;
-        let itemsCollectionRef;
-        let items = []; // Local cache of items, updated in real-time
-
-        // --- DOM Elements ---
-        const roleSelectionView = document.getElementById('role-selection-view');
-        const adminView = document.getElementById('admin-view');
-        const operatorView = document.getElementById('operator-view');
-        const adminLoginModal = document.getElementById('admin-login-modal');
-        const adminLoginForm = document.getElementById('admin-login-form');
-        const loginCancelBtn = document.getElementById('login-cancel-btn');
-        const loginError = document.getElementById('login-error');
-        const connectionStatus = document.getElementById('connection-status');
-        const adminRoleBtn = document.getElementById('admin-role-btn');
-        const operatorRoleBtn = document.getElementById('operator-role-btn');
-        const adminLogoutBtn = document.getElementById('admin-logout-btn');
-        const operatorLogoutBtn = document.getElementById('operator-logout-btn');
-        const itemForm = document.getElementById('item-form');
-        const formTitle = document.getElementById('form-title');
-        const submitBtn = document.getElementById('submit-btn');
-        const cancelEditBtn = document.getElementById('cancel-edit-btn');
-        const imagePreview = document.getElementById('image-preview');
-        const imageInput = document.getElementById('gambar-barang');
-        const itemListDiv = document.getElementById('item-list');
-        const loadingSpinnerAdmin = document.getElementById('loading-spinner-admin');
-        const searchInput = document.getElementById('search-input');
-        const searchBtn = document.getElementById('search-btn');
-        const searchResultDiv = document.getElementById('search-result');
-        const imageModal = document.getElementById('image-modal');
-        const modalImg = document.getElementById('modal-img');
-        const closeModalBtn = document.getElementById('close-modal-btn');
-        const zoomInBtn = document.getElementById('zoom-in-btn');
-        const zoomOutBtn = document.getElementById('zoom-out-btn');
-        const confirmModal = document.getElementById('confirm-modal');
-        const confirmTitle = document.getElementById('confirm-title');
-        const confirmMessage = document.getElementById('confirm-message');
-        const confirmCancelBtn = document.getElementById('confirm-cancel');
-        const confirmOkBtn = document.getElementById('confirm-ok');
-
-        let currentZoom = 1;
-        
-        // --- UTILITY FUNCTIONS ---
-        function showView(view) {
-            roleSelectionView.classList.add('hidden');
-            adminView.classList.add('hidden');
-            operatorView.classList.add('hidden');
-            
-            if (view === 'admin') adminView.classList.remove('hidden');
-            else if (view === 'operator') operatorView.classList.remove('hidden');
-            else roleSelectionView.classList.remove('hidden');
-        }
-        
-        function showConfirmation(config) {
-            confirmTitle.textContent = config.title;
-            confirmMessage.textContent = config.message;
-            confirmOkBtn.textContent = config.okText || 'OK';
-            confirmCancelBtn.textContent = config.cancelText || 'Batal';
-            confirmCancelBtn.classList.toggle('hidden', !config.onCancel);
-            confirmOkBtn.className = config.okClass || 'bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600';
-
-            confirmModal.classList.remove('hidden');
-
-            const okHandler = () => {
-                if (config.onOk) config.onOk();
-                hideConfirmation();
-            };
-            
-            const cancelHandler = () => {
-                if (config.onCancel) config.onCancel();
-                hideConfirmation();
-            }
-
-            confirmOkBtn.onclick = okHandler;
-            confirmCancelBtn.onclick = cancelHandler;
-        }
-
-        function hideConfirmation() {
-            confirmModal.classList.add('hidden');
-            confirmOkBtn.onclick = null;
-            confirmCancelBtn.onclick = null;
-        }
-
-        // --- FIREBASE DATA HANDLING ---
-        
-        function setupRealtimeListener() {
-            onSnapshot(itemsCollectionRef, (snapshot) => {
-                items = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-                renderAdminList();
-                loadingSpinnerAdmin.classList.add('hidden');
-                // If a search result is currently displayed, update it
-                const currentSearchCode = searchInput.value.trim();
-                if(document.body.contains(operatorView) && !operatorView.classList.contains('hidden') && currentSearchCode){
-                    handleSearch();
-                }
-            }, (error) => {
-                console.error("Error listening to database:", error);
-                loadingSpinnerAdmin.innerHTML = `<p class="text-red-500">Gagal terhubung ke database.</p>`;
-            });
-        }
-        
-        async function addItem(itemData) {
-            try {
-                await addDoc(itemsCollectionRef, itemData);
-            } catch (e) {
-                console.error("Error adding document: ", e);
-            }
-        }
-        
-        async function updateItem(id, itemData) {
-            const itemDocRef = doc(db, "items", id);
-            try {
-                await updateDoc(itemDocRef, itemData);
-            } catch(e) {
-                console.error("Error updating document: ", e);
-            }
-        }
-        
-        async function deleteItem(id) {
-            const itemDocRef = doc(db, "items", id);
-            try {
-                await deleteDoc(itemDocRef);
-            } catch(e) {
-                 console.error("Error deleting document: ", e);
-            }
-        }
-
-        // --- RENDER FUNCTIONS ---
-        function renderAdminList() {
-            itemListDiv.innerHTML = '';
-            if (items.length === 0) {
-                itemListDiv.innerHTML = `<p class="text-slate-500 col-span-full text-center">Belum ada data barang.</p>`;
-                return;
-            }
-
-            items.forEach(item => {
-                const itemCard = `
-                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 flex flex-col justify-between">
-                        <div>
-                            <img src="${item.gambar || 'https://placehold.co/400x300/e2e8f0/64748b?text=No+Image'}" alt="${item.nama}" class="w-full h-40 object-cover rounded-md mb-4 cursor-pointer" onclick="window.app.showImageModal('${item.gambar || ''}')">
-                            <h3 class="font-bold text-lg">${item.nama}</h3>
-                            <p class="text-sm text-indigo-600 font-semibold mb-2">Kode: ${item.kode}</p>
-                            <p class="text-slate-600 text-sm break-words">${item.masalah}</p>
-                        </div>
-                        <div class="flex justify-end space-x-2 mt-4">
-                            <button class="edit-btn p-2 text-slate-500 hover:text-indigo-600" data-id="${item.id}">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                            </button>
-                            <button class="delete-btn p-2 text-slate-500 hover:text-red-600" data-id="${item.id}">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                            </button>
-                        </div>
-                    </div>
-                `;
-                itemListDiv.innerHTML += itemCard;
-            });
-
-            document.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', handleEditClick));
-            document.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', handleDeleteClick));
-        }
-        
-        function displaySearchResult(foundItems) {
-            searchResultDiv.innerHTML = ''; // Clear previous results
-            if (foundItems.length > 0) {
-                foundItems.forEach(item => {
-                    const resultCard = `
-                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-6 w-80 flex-shrink-0">
-                            <img src="${item.gambar || 'https://placehold.co/600x400/e2e8f0/64748b?text=No+Image'}" alt="${item.nama}" class="w-full h-56 object-cover rounded-md mb-4 cursor-pointer" onclick="window.app.showImageModal('${item.gambar || ''}')">
-                            <h3 class="font-bold text-xl text-slate-800">${item.nama}</h3>
-                            <p class="text-md text-indigo-600 font-semibold mb-2">Kode: ${item.kode}</p>
-                            <p class="text-slate-600 mt-4"><span class="font-semibold">Detail Masalah:</span><br>${item.masalah}</p>
-                        </div>
-                    `;
-                    searchResultDiv.innerHTML += resultCard;
+                menuButton.addEventListener('click', () => {
+                    const isExpanded = menuButton.getAttribute('aria-expanded') === 'true';
+                    
+                    if (isExpanded) {
+                        // Tutup menu
+                        navMenu.classList.add('hidden');
+                        iconMenu.classList.remove('hidden');
+                        iconClose.classList.add('hidden');
+                        menuButton.setAttribute('aria-expanded', 'false');
+                    } else {
+                        // Buka menu
+                        navMenu.classList.remove('hidden');
+                        iconMenu.classList.add('hidden');
+                        iconClose.classList.remove('hidden');
+                        menuButton.setAttribute('aria-expanded', 'true');
+                    }
                 });
-            } else {
-                searchResultDiv.innerHTML = `<p class="text-center text-red-500 font-semibold w-full">Barang dengan kode tersebut tidak ditemukan.</p>`;
-            }
-        }
 
-        // --- EVENT HANDLERS ---
-        function handleAdminLogin(e) {
-            e.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-
-            // Simple hardcoded credentials
-            if (username === 'admin' && password === 'shinpo23') {
-                adminLoginModal.classList.add('hidden');
-                adminLoginForm.reset();
-                loginError.classList.add('hidden');
-                showView('admin');
-            } else {
-                loginError.classList.remove('hidden');
-            }
-        }
-
-        function handleSearch() {
-            const query = searchInput.value.trim();
-            if (!query) {
-                searchResultDiv.innerHTML = `<p class="text-center text-slate-500 w-full">Silakan masukkan kode barang.</p>`;
-                return;
-            }
-            const foundItems = items.filter(item => item.kode.toLowerCase() === query.toLowerCase());
-            displaySearchResult(foundItems);
-        }
-
-        function handleFormSubmit(e) {
-            e.preventDefault();
-            const id = document.getElementById('item-id').value;
-            const file = imageInput.files[0];
-
-            const itemData = {
-                kode: document.getElementById('kode-barang').value,
-                nama: document.getElementById('nama-barang').value,
-                masalah: document.getElementById('permasalahan').value
-            };
-            
-            const processSubmit = (imageUrl) => {
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Menyimpan...';
-
-                if (id) {
-                    const existingItem = items.find(item => item.id === id);
-                    const updatedItem = { ...itemData, gambar: imageUrl !== undefined ? imageUrl : existingItem.gambar };
-                    updateItem(id, updatedItem);
-                } else {
-                    addItem({ ...itemData, gambar: imageUrl || null });
-                }
-                resetForm();
-                submitBtn.disabled = false;
-            };
-
-            if (file) {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    // WARNING: Storing large images as base64 strings in Firestore is not recommended.
-                    // Consider using Firebase Storage for production apps.
-                    processSubmit(reader.result);
-                };
-                reader.readAsDataURL(file);
-            } else {
-                processSubmit(undefined);
-            }
-        }
+                // Tutup menu ketika mengklik di luar area menu
+                document.addEventListener('click', (event) => {
+                    // Pastikan klik bukan pada tombol dan bukan di dalam menu
+                    if (!navMenu.contains(event.target) && !menuButton.contains(event.target)) {
+                         if (menuButton.getAttribute('aria-expanded') === 'true') {
+                            navMenu.classList.add('hidden');
+                            iconMenu.classList.remove('hidden');
+                            iconClose.classList.add('hidden');
+                            menuButton.setAttribute('aria-expanded', 'false');
+                        }
+                    }
+                });
+            });
+        </script>
         
-        function handleEditClick(e) {
-            const id = e.currentTarget.dataset.id;
-            const item = items.find(i => i.id === id);
-            if (item) {
-                document.getElementById('item-id').value = item.id;
-                document.getElementById('kode-barang').value = item.kode;
-                document.getElementById('nama-barang').value = item.nama;
-                document.getElementById('permasalahan').value = item.masalah;
-                imagePreview.src = item.gambar || '';
-                imagePreview.classList.toggle('hidden', !item.gambar);
-                formTitle.textContent = "Edit Data Barang";
-                submitBtn.textContent = "Update";
-                cancelEditBtn.classList.remove('hidden');
-                window.scrollTo(0, 0);
-            }
-        }
-
-        function handleDeleteClick(e) {
-            const id = e.currentTarget.dataset.id;
-            const item = items.find(i => i.id === id);
-            if (item) {
-                 showConfirmation({
-                    title: 'Hapus Barang', 
-                    message: `Anda yakin ingin menghapus data untuk "${item.nama}" (Kode: ${item.kode})?`, 
-                    okText: 'Ya, Hapus',
-                    okClass: 'bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700',
-                    onOk: () => deleteItem(id),
-                    onCancel: () => {}
-                 });
-            }
-        }
-        
-        function resetForm() {
-            itemForm.reset();
-            document.getElementById('item-id').value = '';
-            imagePreview.src = '';
-            imagePreview.classList.add('hidden');
-            formTitle.textContent = "Tambah Barang Baru";
-            submitBtn.textContent = "Simpan";
-            cancelEditBtn.classList.add('hidden');
-        }
-        
-        window.app = {
-            showImageModal: (src) => {
-                if (!src) return;
-                modalImg.src = src;
-                currentZoom = 1;
-                modalImg.style.transform = 'scale(1)';
-                imageModal.classList.remove('hidden');
-                document.body.classList.add('modal-open');
-            }
-        };
-
-        function hideImageModal() {
-            imageModal.classList.add('hidden');
-            document.body.classList.remove('modal-open');
-        }
-
-        // --- INITIALIZATION ---
-        function init() {
-            adminRoleBtn.addEventListener('click', () => {
-                adminLoginModal.classList.remove('hidden');
-            });
-            operatorRoleBtn.addEventListener('click', () => showView('operator'));
-
-            loginCancelBtn.addEventListener('click', () => {
-                adminLoginModal.classList.add('hidden');
-                loginError.classList.add('hidden');
-                adminLoginForm.reset();
-            });
-            adminLoginForm.addEventListener('submit', handleAdminLogin);
-
-            adminLogoutBtn.addEventListener('click', () => showView('role-selection'));
-            operatorLogoutBtn.addEventListener('click', () => {
-                searchInput.value = '';
-                searchResultDiv.innerHTML = '';
-                showView('role-selection');
-            });
-            
-            itemForm.addEventListener('submit', handleFormSubmit);
-            cancelEditBtn.addEventListener('click', resetForm);
-            imageInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        imagePreview.src = event.target.result;
-                        imagePreview.classList.remove('hidden');
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-
-            searchBtn.addEventListener('click', handleSearch);
-            searchInput.addEventListener('keyup', (e) => {
-                if (e.key === 'Enter') handleSearch();
-            });
-            
-            closeModalBtn.addEventListener('click', hideImageModal);
-            imageModal.addEventListener('click', (e) => {
-                if (e.target === imageModal) hideImageModal();
-            });
-            
-            zoomInBtn.addEventListener('click', () => {
-                currentZoom = Math.min(3, currentZoom + 0.2);
-                modalImg.style.transform = `scale(${currentZoom})`;
-            });
-            zoomOutBtn.addEventListener('click', () => {
-                currentZoom = Math.max(0.5, currentZoom - 0.2);
-                modalImg.style.transform = `scale(${currentZoom})`;
-            });
-
-            // Initialize Firebase or show message
-            if (USE_FIREBASE) {
-                try {
-                    const app = initializeApp(firebaseConfig);
-                    db = getFirestore(app);
-                    itemsCollectionRef = collection(db, "items");
-                    setupRealtimeListener();
-                    connectionStatus.textContent = "Terhubung ke Database Real-time";
-                    connectionStatus.style.color = 'green';
-                } catch(e) {
-                    console.error("Firebase Initialization Error:", e);
-                    loadingSpinnerAdmin.innerHTML = `<p class="text-red-500">Konfigurasi Firebase tidak valid.</p>`;
-                    connectionStatus.textContent = "Gagal terhubung ke database";
-                    connectionStatus.style.color = 'red';
-                }
-            } else {
-                console.log("Using local storage simulation. Please configure Firebase.");
-                loadingSpinnerAdmin.innerHTML = `<p class="text-orange-500">Mode Demo. Harap konfigurasi Firebase untuk fitur real-time.</p>`;
-                connectionStatus.textContent = "Mode Demo (Data Lokal)";
-                connectionStatus.style.color = 'orange';
-            }
-        }
-        
-        init();
-    </script>
+    </div>
 
 </body>
 </html>
-
