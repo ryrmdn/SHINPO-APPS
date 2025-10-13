@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Mengubah judul tab browser -->
     <title>PT. Sahabat Intim Plasindo</title>
+    <!-- Memuat Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Memuat Tailwind CSS untuk styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Konfigurasi Tailwind untuk font Inter dan CSS Kustom -->
@@ -14,35 +16,90 @@
             font-family: 'Inter', sans-serif;
             overflow-x: hidden; /* Mencegah scroll horizontal */
         }
+        /* Kelas transisi kustom untuk konten halaman */
+        .page-content-transition {
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        /* CSS kustom untuk responsivitas tabel */
+        .table-container-responsive {
+            overflow-x: auto; /* Memungkinkan scroll horizontal pada tabel di mobile */
+            -webkit-overflow-scrolling: touch;
+        }
+        .table-container-responsive th, .table-container-responsive td {
+            white-space: nowrap; /* Mencegah sel tabel pecah */
+            padding: 12px 16px;
+        }
+
+        /* --- PENGELOLAAN VISIBILITAS HEADER BERBASIS STATE --- */
+        /* State default: Tampilan publik */
+        #adminLogoutButton { display: none; }
+
+        /* State admin: Sembunyikan navigasi publik & burger, tampilkan tombol logout */
+        body[data-app-state="admin-view"] #desktopNav,
+        body[data-app-state="admin-view"] #burgerContainer {
+            display: none;
+        }
+        body[data-app-state="admin-view"] #adminLogoutButton {
+            display: block;
+        }
+
+        /* State pengguna: Sembunyikan navigasi desktop, tampilkan burger */
+        body[data-app-state="user-view"] #desktopNav { display: none; }
+        
+        /* Styling untuk input tanggal agar terlihat konsisten */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            opacity: 0.6;
+            filter: invert(0.5);
+        }
+        
+        /* Custom class untuk meratakan konten di kolom kanan */
+        .data-label {
+            font-weight: 500; /* Medium */
+            color: #4b5563; /* gray-700 */
+        }
+        .data-value {
+            font-weight: 500; /* Medium */
+            color: #1f2937; /* gray-900 */
+        }
+        
     </style>
 </head>
-<body class="bg-white">
+<body class="bg-gray-50" data-app-state="public-view">
 
-    <!-- Kontainer Utama: Latar Belakang Putih -->
-    <div class="min-h-screen bg-white relative flex flex-col justify-center pb-16">
-
+    <!-- Kontainer Utama -->
+    <div class="min-h-screen relative flex flex-col justify-center pb-16">
+        
         <!-- Navigasi Bar / Header -->
-        <header id="appHeader" class="absolute top-0 left-0 right-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 z-50">
+        <header id="appHeader" class="absolute top-0 left-0 right-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 z-50">
             <nav class="flex items-center justify-between w-full">
-                <!-- Logo SHINPO (KIRI) -->
+                <!-- Logo SHINPO (KIRI - SELALU TERLIHAT) -->
                 <div class="flex items-center">
-                    <img 
+                    <img    
                         src="https://www.shinpo.co.id/wp-content/uploads/2019/09/shinpo-logo-mobile.png"
                         class="h-10 w-auto"
                         alt="Logo SHINPO"
                         onerror="this.onerror=null;this.src='https://placehold.co/120x40/FF0000/FFFFFF?text=SHINPO'"
-                        onclick="showPage('mainHero')" 
+                        onclick="showPage('mainHero')"    
                         style="cursor: pointer;"
                     >
                 </div>
 
-                <!-- Kontainer Kanan (Burger / Logout) -->
-                <div class="flex items-center space-x-4">
+                <!-- Kontainer Kanan (Menu Navigasi Desktop & Burger / Logout) -->
+                <div class="flex items-center space-x-3 sm:space-x-4">
+                    
+                    <!-- MENU NAVIGASI DESKTOP (DISPLAI HANYA DI HALAMAN PUBLIK) -->
+                    <div id="desktopNav" class="hidden sm:flex space-x-6 text-lg font-medium">
+                        <a href="#" onclick="showPage('mainHero')" class="text-gray-800 hover:text-red-500 transition duration-150">Home</a>
+                        <a href="#" onclick="showPage('aboutPage')" class="text-gray-800 hover:text-red-500 transition duration-150">About</a>
+                        <a href="#" onclick="showPage('contactPage')" class="text-gray-800 hover:text-red-500 transition duration-150">Contact</a>
+                    </div>
                     
                     <!-- Tombol Logout Admin (HANYA TERLIHAT DI DASHBOARD ADMIN) -->
-                    <button 
-                        id="adminLogoutButton" 
-                        onclick="showPage('mainHero')" 
+                    <button    
+                        id="adminLogoutButton"    
+                        onclick="handleLogout()"    
                         class="hidden bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-red-700 transition duration-200 focus:outline-none"
                     >
                         Logout
@@ -51,7 +108,7 @@
                     <!-- Kontainer untuk Tombol Burger dan Menu -->
                     <div id="burgerContainer" class="relative">
                         <!-- Tombol Burger Menu (KANAN) -->
-                        <button 
+                        <button    
                             id="menuButton"
                             class="p-2 text-blue-900 border border-blue-900 rounded-lg hover:bg-blue-100 transition duration-150"
                             aria-label="Toggle Menu"
@@ -86,8 +143,8 @@
         </header>
 
         <!-- 1. HALAMAN UTAMA (HERO) -->
-        <main id="mainHero" class="page-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="flex flex-col items-center justify-center pt-40"> 
+        <main id="mainHero" class="page-content page-content-transition max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 opacity-100">
+            <div class="flex flex-col items-center justify-center pt-24 sm:pt-40">    
                 <div class="w-full text-center mb-12 lg:mb-0">
                     <h1 class="text-2xl sm:text-5xl lg:text-6xl font-extrabold leading-tight text-red-500 mb-3">
                         Solusi Plastik Terbaik untuk Kebutuhan Rumah Tangga dan Industri Anda
@@ -99,23 +156,23 @@
             </div>
         </main>
 
-        <!-- 2. HALAMAN MENU PENGGUNA (Tersembunyi Awalnya) -->
-        <div id="userMenu" class="page-content hidden max-w-xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-20 flex flex-col items-center justify-center">
+        <!-- 2. HALAMAN MENU PENGGUNA -->
+        <div id="userMenu" class="page-content page-content-transition hidden opacity-0 max-w-xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-20 flex flex-col items-center justify-center">
             <!-- HEADER BARU UNTUK PENGGUNA (Menyerupai Admin Dashboard) -->
-            <h2 class="text-4xl font-extrabold text-green-700 mb-6 text-center">Selamat Datang, Pengguna!</h2>
+            <h2 class="text-4xl font-extrabold text-blue-900 mb-6 text-center">Selamat Datang, Pengguna!</h2>
             <p class="text-lg text-gray-600 mb-10 text-center">Silakan pilih menu di bawah ini untuk mengakses layanan PT. Sahabat Intim Plasindo.</p>
             
             <div class="space-y-4 w-full">
                 <!-- Opsi 1: Biodata Karyawan (Hijau - Serasi dengan Kelola Karyawan Baru) -->
-                <a href="#" class="block w-full p-4 bg-green-50 text-green-800 text-xl font-medium text-center rounded-lg shadow-md hover:bg-green-100 hover:shadow-lg transition duration-150 border border-green-200">
+                <a href="#" onclick="showPage('biodataPage')" class="block w-full p-4 bg-green-50 text-green-800 text-xl font-medium text-center rounded-lg shadow-md hover:bg-green-100 hover:shadow-lg transition duration-150 border border-green-200">
                     Biodata Karyawan
                 </a>
                 <!-- Opsi 2: Permasalahan Karyawan (Kuning - Serasi dengan Update Permasalahan Karyawan) -->
-                <a href="#" class="block w-full p-4 bg-yellow-50 text-yellow-800 text-xl font-medium text-center rounded-lg shadow-md hover:bg-yellow-100 hover:shadow-lg transition duration-150 border border-yellow-200">
+                <a href="#" onclick="showPage('userProblemPage')" class="block w-full p-4 bg-yellow-50 text-yellow-800 text-xl font-medium text-center rounded-lg shadow-md hover:bg-yellow-100 hover:shadow-lg transition duration-150 border border-yellow-200">
                     Permasalahan Karyawan
                 </a>
                 <!-- Opsi 3: Permasalahan Produksi (Biru - Serasi dengan Laporan Permasalahan Produksi) -->
-                <a href="#" class="block w-full p-4 bg-blue-50 text-blue-800 text-xl font-medium text-center rounded-lg shadow-md hover:bg-blue-100 hover:shadow-lg transition duration-150 border border-blue-200">
+                <a href="#" onclick="showPage('userProductionPage')" class="block w-full p-4 bg-blue-50 text-blue-800 text-xl font-medium text-center rounded-lg shadow-md hover:bg-blue-100 hover:shadow-lg transition duration-150 border border-blue-200">
                     Permasalahan Produksi
                 </a>
             </div>
@@ -127,19 +184,19 @@
         </div>
 
         <!-- 3. HALAMAN LOGIN ADMIN -->
-        <div id="adminLogin" class="page-content hidden max-w-md w-full mx-auto px-4 sm:px-6 lg:px-8 pt-20 flex flex-col items-center justify-center">
+        <div id="adminLogin" class="page-content page-content-transition hidden opacity-0 max-w-md w-full mx-auto px-4 sm:px-6 lg:px-8 pt-20 flex flex-col items-center justify-center">
             
             <div class="w-full bg-white p-6 sm:p-8 rounded-xl shadow-2xl border border-gray-100">
-                <h2 class="text-3xl font-bold text-red-700 mb-8 text-center">Login Admin</h2>
+                <h2 class="text-3xl font-bold text-red-600 mb-8 text-center">Login Admin</h2>
                 
                 <form onsubmit="handleAdminLogin(event)">
                     
                     <!-- Username Input -->
                     <div class="mb-5">
                         <label for="username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
-                        <input 
-                            type="text" 
-                            id="adminUsername" 
+                        <input    
+                            type="text"    
+                            id="adminUsername"    
                             name="username"
                             placeholder="Masukkan Username Anda"
                             required
@@ -150,9 +207,9 @@
                     <!-- Password Input -->
                     <div class="mb-8">
                         <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                        <input 
-                            type="password" 
-                            id="adminPassword" 
+                        <input    
+                            type="password"    
+                            id="adminPassword"    
                             name="password"
                             placeholder="Masukkan Password Anda"
                             required
@@ -164,8 +221,8 @@
                     <div id="loginMessage" class="text-center text-sm text-red-500 mb-4 hidden"></div>
 
                     <!-- Tombol Login -->
-                    <button 
-                        type="submit" 
+                    <button    
+                        type="submit"    
                         class="w-full bg-red-600 text-white font-bold py-3 rounded-lg shadow-lg hover:bg-red-700 transition duration-200 focus:outline-none focus:ring-4 focus:ring-red-300"
                     >
                         Login
@@ -179,166 +236,861 @@
             </button>
         </div>
         
-        <!-- 4. HALAMAN DASHBOARD ADMIN (Baru) -->
-        <div id="adminDashboard" class="page-content hidden max-w-3xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-20 flex flex-col items-center justify-center">
-            <h2 class="text-4xl font-extrabold text-green-700 mb-6 text-center">Selamat Datang, Admin!</h2>
+        <!-- 4. HALAMAN DASHBOARD ADMIN -->
+        <div id="adminDashboard" class="page-content page-content-transition hidden opacity-0 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-20 flex flex-col items-center justify-center">
+            <h2 class="text-4xl font-extrabold text-blue-900 mb-6 text-center">Selamat Datang, Admin!</h2>
             <p class="text-lg text-gray-600 mb-10 text-center">Anda telah berhasil login ke Dashboard Administrasi PT. Sahabat Intim Plasindo.</p>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
-                <!-- Kelola Karyawan Baru -->
-                <div class="p-6 bg-green-50 rounded-xl shadow-lg border border-green-200 text-center">
-                    <h3 class="text-2xl font-bold text-green-800">Kelola<br>Karyawan<br>Baru</h3>
-                    <p class="text-gray-600 mt-2">Akses data pada biodata karyawan baru</p>
-                </div>
+                <!-- Update Karyawan -->
+                <a href="#" onclick="showPage('employeeInputPage')" class="block p-6 bg-green-50 rounded-xl shadow-lg border border-green-200 text-center hover:bg-green-100 transition duration-150">
+                    <h3 class="text-2xl font-bold text-green-800">Update<br>Karyawan</h3>
+                    <p class="text-gray-600 mt-2">Update karyawan baru seperti Nama Karyawan, No. Absen, Bagian, Dll.</p>
+                </a>
                 <!-- Update Permasalahan Karyawan -->
-                <div class="p-6 bg-yellow-50 rounded-xl shadow-lg border border-yellow-200 text-center">
+                <a href="#" onclick="showPage('employeeListPage')" class="block p-6 bg-yellow-50 rounded-xl shadow-lg border border-yellow-200 text-center hover:bg-yellow-100 transition duration-150">
                     <h3 class="text-2xl font-bold text-yellow-800">Update<br>Permasalahan<br>Karyawan</h3>
-                    <p class="text-gray-600 mt-2">Tinjau permasalahan karyawan seperti SP atau Potong Gaji</p>
+                    <p class="text-gray-600 mt-2">Update Permasalahan Karyawan</p>
+                </a>
+                <!-- Update Permasalahan Produksi -->
+                <a href="#" onclick="showPage('productionReportPage')" class="block p-6 bg-blue-50 rounded-xl shadow-lg border border-blue-200 text-center hover:bg-blue-100 transition duration-150">
+                    <h3 class="text-2xl font-bold text-blue-800">Update<br>Permasalahan<br>Produksi</h3>
+                    <p class="text-gray-600 mt-2">Laporan permasalahan produksi seperti adanya barang yang BS atau rusak.</p>
+                </a>
+            </div>
+        </div>
+
+        <!-- 5. HALAMAN UPDATE KARYAWAN (DIRUBAH TOTAL) -->
+        <div id="employeeInputPage" class="page-content page-content-transition hidden opacity-0 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-20 flex-col items-center justify-center">
+            
+            <!-- Bagian Daftar Karyawan (Tampil Secara Default) -->
+            <div id="employeeListSection" class="w-full">
+                <h2 class="text-3xl font-extrabold text-green-700 mb-6 text-center">Data Karyawan Tersimpan</h2>
+                <!-- Kontainer Tabel Admin -->
+                <div id="adminEmployeeListContainer" class="w-full bg-white rounded-xl shadow-lg border border-gray-100 p-2 mb-6 table-container-responsive">
+                    <!-- Tabel akan dimuat di sini oleh JavaScript -->
+                    <p class="text-center text-gray-500 py-4">Memuat data...</p>    
                 </div>
-                <!-- Laporan Permasalahan Produksi -->
-                <div class="p-6 bg-blue-50 rounded-xl shadow-lg border border-blue-200 text-center">
-                    <h3 class="text-2xl font-bold text-blue-800">Laporan<br>Permasalahan<br>Produksi</h3>
-                    <p class="text-gray-600 mt-2">Permasalahan pada produksi</p>
+                <button id="showAddFormButton" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg shadow-lg hover:bg-green-700 transition duration-200">
+                    + Tambah Data Karyawan Baru
+                </button>
+            </div>
+        
+            <!-- Bagian Form Input (Tersembunyi Secara Default) -->
+            <div id="addEmployeeFormSection" class="hidden w-full">
+                <h2 class="text-3xl font-extrabold text-green-700 mb-6 text-center">Input Data Karyawan Baru</h2>
+                <div class="w-full bg-white p-6 sm:p-8 rounded-xl shadow-2xl border border-gray-100">
+                    <form id="employeeForm" onsubmit="saveEmployeeData(event)">
+                        
+                        <!-- Status dan Feedback -->
+                        <div id="employeeStatus" class="text-center p-3 rounded-lg mb-4 hidden"></div>
+    
+                        <!-- BARIS 1: Nama Karyawan & No. Absen -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="mb-4">
+                                <label for="nama" class="block text-sm font-medium text-gray-700 mb-1">Nama Karyawan</label>
+                                <input type="text" id="nama" name="nama" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 transition" oninput="this.value = this.value.toUpperCase()">
+                            </div>
+                            <div class="mb-4">
+                                <label for="noAbsen" class="block text-sm font-medium text-gray-700 mb-1">No. Absen</label>
+                                <input type="text" id="noAbsen" name="noAbsen" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 transition" oninput="this.value = this.value.toUpperCase()">
+                            </div>
+                        </div>
+    
+                        <!-- BARIS 2: Tanggal Masuk & Status Pekerjaan -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="mb-4">
+                                <label for="tglMasuk" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Masuk</label>
+                                <!-- IMPROVEMENT: Menggunakan input type="date" untuk date picker bawaan browser -->
+                                <input type="date" id="tglMasuk" name="tglMasuk" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 transition">
+                            </div>
+                            <div class="mb-4">
+                                <label for="statusPekerjaan" class="block text-sm font-medium text-gray-700 mb-1">Status Pekerjaan</label>
+                                <select id="statusPekerjaan" name="statusPekerjaan" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 transition">
+                                    <option value="" disabled selected>Pilih Status</option>
+                                    <option value="TRAINEE">TRAINEE</option>
+                                    <option value="PHL">PHL</option>
+                                    <option value="KONTRAK">KONTRAK</option>
+                                    <option value="STAFF">STAFF</option>
+                                    <option value="KARYAWAN TETAP">KARYAWAN TETAP</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- BARIS 3: Bagian & Pendidikan -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="mb-4">
+                                <label for="bagian" class="block text-sm font-medium text-gray-700 mb-1">Bagian</label>
+                                <input type="text" id="bagian" name="bagian" placeholder="Masukkan Bagian" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 transition" oninput="this.value = this.value.toUpperCase()">
+                            </div>
+                            <div class="mb-4">
+                                <label for="pendidikan" class="block text-sm font-medium text-gray-700 mb-1">Pendidikan</label>
+                                <select id="pendidikan" name="pendidikan" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 transition">
+                                    <option value="" disabled selected>Pilih Pendidikan</option>
+                                    <option value="SD">SD</option>
+                                    <option value="SMP">SMP</option>
+                                    <option value="SMA/SMK">SMA/SMK</option>
+                                    <option value="D3">D3</option>
+                                    <option value="S1">S1</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- BARIS 4: Agama & Jenis Kelamin -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="mb-4">
+                                <label for="agama" class="block text-sm font-medium text-gray-700 mb-1">Agama</label>
+                                <select id="agama" name="agama" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 transition">
+                                    <option value="" disabled selected>Pilih Agama</option>
+                                    <option value="ISLAM">ISLAM</option>
+                                    <option value="KRISTEN">KRISTEN</option>
+                                    <option value="KATOLIK">KATOLIK</option>
+                                    <option value="HINDU">HINDU</option>
+                                    <option value="BUDDHA">BUDDHA</option>
+                                    <option value="KONGHUCU">KONGHUCU</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label for="jenisKelamin" class="block text-sm font-medium text-gray-700 mb-1">Jenis Kelamin</label>
+                                <select id="jenisKelamin" name="jenisKelamin" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 transition">
+                                    <option value="" disabled selected>Pilih Jenis Kelamin</option>
+                                    <option value="LAKI - LAKI">LAKI - LAKI</option>
+                                    <option value="PEREMPUAN">PEREMPUAN</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- BARIS 5: Tempat Tanggal Lahir & Status Perkawinan -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="mb-4">
+                                <label for="tptTglLahir" class="block text-sm font-medium text-gray-700 mb-1">Tempat, Tanggal Lahir</label>
+                                <input type="text" id="tptTglLahir" name="tptTglLahir" placeholder="Contoh: JAKARTA, 01/01/1990" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 transition" oninput="this.value = this.value.toUpperCase()">
+                            </div>
+                            <div class="mb-4">
+                                <label for="statusKawin" class="block text-sm font-medium text-gray-700 mb-1">Status Perkawinan</label>
+                                <select id="statusKawin" name="statusKawin" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 transition">
+                                    <option value="" disabled selected>Pilih Status</option>
+                                    <option value="BELUM MENIKAH">BELUM MENIKAH</option>
+                                    <option value="MENIKAH">MENIKAH</option>
+                                    <option value="CERAI HIDUP">CERAI HIDUP</option>
+                                    <option value="CERAI MATI">CERAI MATI</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- BARIS 6: No. WhatsApp & Alamat -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="mb-4">
+                                <label for="noWa" class="block text-sm font-medium text-gray-700 mb-1">No. WhatsApp</label>
+                                <input type="text" id="noWa" name="noWa" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 transition" onkeypress="return (event.charCode >= 48 && event.charCode <= 57)">
+                            </div>
+                            <div class="mb-4">
+                                <label for="alamat" class="block text-sm font-medium text-gray-700 mb-1">Alamat Lengkap</label>
+                                <textarea id="alamat" name="alamat" rows="2" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 transition" oninput="this.value = this.value.toUpperCase()"></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- BARIS 7: Foto Karyawan -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div class="mb-4">
+                                <label for="fotoKaryawan" class="block text-sm font-medium text-gray-700 mb-1">Foto Karyawan (Max 500KB)</label>
+                                <input type="file" id="fotoKaryawan" name="fotoKaryawan" accept="image/jpeg, image/png" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 transition" onchange="previewImage(event)">
+                            </div>
+                            <div class="mb-4 flex items-center justify-center border border-gray-300 rounded-lg p-2">
+                                <img id="imagePreview" src="https://placehold.co/100x100/eeeeee/333333?text=Pratinjau+Foto" alt="Pratinjau Foto" class="w-24 h-24 object-cover rounded-md">
+                            </div>
+                        </div>
+                        
+                        <!-- Tombol Aksi Form -->
+                         <div class="flex flex-col sm:flex-row gap-4 mt-4">
+                            <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg shadow-lg hover:bg-green-700 transition">
+                                Simpan Data
+                            </button>
+                            <button type="button" id="cancelAddFormButton" class="w-full bg-gray-500 text-white font-bold py-3 rounded-lg shadow-lg hover:bg-gray-600 transition">
+                                Batal
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
+            
+            <!-- Tombol Kembali ke Dashboard -->
+            <button onclick="showPage('adminDashboard')" class="mt-6 text-blue-500 hover:text-blue-700 transition duration-150">
+                &larr; Kembali ke Dashboard Admin
+            </button>
+        </div>
+        
+        <!-- 6. HALAMAN DAFTAR KARYAWAN (PERMASALAHAN KARYAWAN) -->
+        <div id="employeeListPage" class="page-content page-content-transition hidden opacity-0 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-10 flex flex-col items-center">
+            <h2 class="text-3xl font-extrabold text-yellow-800 mb-6 text-center">Update Permasalahan Karyawan</h2>
+            <p class="text-lg text-gray-600 mb-6 text-center">Pilih karyawan untuk mengupdate data permasalahan seperti SP atau potong gaji.</p>
+            
+            <!-- Tabel Kontainer (Responsif) -->
+            <div id="employeeTableContainer" class="w-full bg-white rounded-xl shadow-2xl border border-gray-100 p-2 mt-4 table-container-responsive">
+                 <!-- Konten tabel akan dimuat oleh JavaScript -->
+                 <p class="text-center text-gray-500 py-4">Memuat data...</p>
+            </div>
+            
+            <!-- Tombol Kembali -->
+            <button onclick="showPage('adminDashboard')" class="mt-6 text-blue-500 hover:text-blue-700 transition duration-150">
+                &larr; Kembali ke Dashboard Admin
+            </button>
+        </div>
+        
+        <!-- 7. HALAMAN ABOUT -->
+        <div id="aboutPage" class="page-content page-content-transition hidden opacity-0 max-w-3xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-20 flex flex-col items-center justify-center text-center">
+            <h2 class="text-4xl font-extrabold text-blue-900 mb-6">Tentang Kami</h2>
+            <p class="text-lg text-gray-600 mb-8">Didirikan pada tahun 1982, PT. Sahabat Intim Plasindo adalah salah satu produsen peralatan rumah tangga dan furnitur plastik terkemuka di Indonesia. Kami berkomitmen untuk terus memperluas pasar, menciptakan produk yang handal dan inovatif, serta meningkatkan praktik bisnis kami untuk menjaga kepuasan pelanggan.</p>
+            <p class="text-lg text-gray-600 mb-10">Pertumbuhan kami didorong oleh meningkatnya permintaan pasar, dan desain produk kami berfokus pada fungsi. Selama lebih dari 30 tahun, kami telah menciptakan produk berdasarkan kebutuhan pelanggan dan berfokus pada optimalisasi pengalaman pengguna. Kami berupaya untuk membuat kehidupan sehari-hari lebih nyaman dan teratur, sehingga lebih sederhana dan bebas dari kekacauan.</p>
+            <button onclick="showPage('mainHero')" class="mt-8 text-blue-500 hover:text-blue-700 transition duration-150">
+                &larr; Kembali ke Beranda
+            </button>
+        </div>
 
-            <!-- Tombol Logout LAMA dihapus dari sini -->
+        <!-- 8. HALAMAN CONTACT -->
+        <div id="contactPage" class="page-content page-content-transition hidden opacity-0 max-w-md w-full mx-auto px-4 sm:px-6 lg:px-8 pt-20 flex flex-col items-center justify-center">
+            <h2 class="text-4xl font-extrabold text-blue-900 mb-8 text-center">Hubungi Kami</h2>
+            <div class="w-full bg-white p-6 sm:p-8 rounded-xl shadow-2xl border border-gray-100 text-left">
+                <p class="mb-4"><span class="font-semibold">Alamat:</span> Jalan Peternakan III No. 38, Kota Administrasi Jakarta Barat, Daerah Khusus Ibukota Jakarta 11720, Indonesia</p>
+                <p class="mb-4"><span class="font-semibold">Telepon:</span> +62 851-7506-5351</p>
+                <p class="mb-4"><span class="font-semibold">Email:</span> admprod21@gmail.com</p>
+                
+                <h3 class="text-xl font-bold text-gray-700 mt-6 mb-4">Kirim Pesan</h3>
+                <form onsubmit="handleContactSubmit(event)">
+                    <input type="text" placeholder="Nama Anda" class="w-full px-4 py-3 border border-gray-300 rounded-lg mb-3" required>
+                    <input type="email" placeholder="Email Anda" class="w-full px-4 py-3 border border-gray-300 rounded-lg mb-3" required>
+                    <textarea placeholder="Pesan Anda" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4" required></textarea>
+                    <button type="submit" class="w-full bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700 transition">Kirim</button>
+                </form>
+            </div>
+            <button onclick="showPage('mainHero')" class="mt-6 text-blue-500 hover:text-blue-700 transition duration-150">
+                &larr; Kembali ke Beranda
+            </button>
+        </div>
+
+        <!-- 9. HALAMAN LAPORAN PRODUKSI (ADMIN) -->
+        <div id="productionReportPage" class="page-content page-content-transition hidden opacity-0 max-w-3xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-20 flex flex-col items-center justify-center text-center">
+            <h2 class="text-4xl font-extrabold text-blue-900 mb-6">Update Permasalahan Produksi</h2>
+            <p class="text-lg text-gray-600 mb-10">Halaman ini akan berisi laporan barang BS/rusak. (Fitur dalam pengembangan)</p>
+            <button onclick="showPage('adminDashboard')" class="mt-8 text-blue-500 hover:text-blue-700 transition duration-150">
+                &larr; Kembali ke Dashboard Admin
+            </button>
+        </div>
+        
+        <!-- 10. HALAMAN BIODATA PENGGUNA (CARI KARYAWAN) -->
+        <div id="biodataPage" class="page-content page-content-transition hidden opacity-0 max-w-2xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-20 flex flex-col items-center justify-center">
+            <h2 class="text-3xl font-extrabold text-green-700 mb-6 text-center">Cari Biodata Karyawan</h2>
+            <div class="w-full bg-white p-6 sm:p-8 rounded-xl shadow-2xl border border-gray-100">
+                <!-- Form Pencarian -->
+                <form id="searchForm" onsubmit="searchEmployee(event)" class="flex flex-col sm:flex-row items-center gap-3 mb-6">
+                    <input    
+                        type="text"    
+                        id="searchName"    
+                        name="searchName"    
+                        placeholder="Ketik nama lengkap Anda di sini..."
+                        required    
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 transition duration-150"
+                    >
+                    <button    
+                        type="submit"    
+                        class="w-full sm:w-auto bg-green-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-green-700 transition duration-200"
+                    >
+                        Cari
+                    </button>
+                </form>
+
+                <!-- Kontainer Hasil Pencarian -->
+                <div id="searchResultContainer" class="mt-4 space-y-4">
+                    <!-- Hasil akan ditampilkan di sini -->
+                     <p class="text-center text-gray-500">Silakan masukkan nama Anda untuk memulai pencarian.</p>
+                </div>
+            </div>
+            
+            <!-- Tombol Kembali -->
+            <button onclick="showPage('userMenu')" class="mt-6 text-blue-500 hover:text-blue-700 transition duration-150">
+                &larr; Kembali ke Menu Pengguna
+            </button>
+        </div>
+
+        <!-- 11. HALAMAN PERMASALAHAN KARYAWAN (PENGGUNA) -->
+        <div id="userProblemPage" class="page-content page-content-transition hidden opacity-0 max-w-3xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-20 flex flex-col items-center justify-center text-center">
+            <h2 class="text-4xl font-extrabold text-yellow-800 mb-6">Informasi Permasalahan Karyawan</h2>
+            <p class="text-lg text-gray-600 mb-10">Untuk pertanyaan atau laporan terkait permasalahan personalia, silakan hubungi departemen HRD secara langsung.</p>
+            <button onclick="showPage('userMenu')" class="mt-8 text-blue-500 hover:text-blue-700 transition duration-150">
+                &larr; Kembali ke Menu Pengguna
+            </button>
+        </div>
+
+        <!-- 12. HALAMAN PERMASALAHAN PRODUKSI (PENGGUNA) -->
+        <div id="userProductionPage" class="page-content page-content-transition hidden opacity-0 max-w-3xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-20 flex flex-col items-center justify-center text-center">
+            <h2 class="text-4xl font-extrabold text-blue-800 mb-6">Informasi Permasalahan Produksi</h2>
+            <p class="text-lg text-gray-600 mb-10">Untuk melaporkan masalah produksi seperti barang rusak (BS), silakan hubungi kepala regu atau supervisor di bagian Anda.</p>
+            <button onclick="showPage('userMenu')" class="mt-8 text-blue-500 hover:text-blue-700 transition duration-150">
+                &larr; Kembali ke Menu Pengguna
+            </button>
+        </div>
+
+        <!-- MODAL BARU UNTUK DETAIL KARYAWAN -->
+        <div id="employeeDetailModal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-[60]">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 relative" id="modalDialog">
+                <button id="closeModalButton" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-3xl leading-none">&times;</button>
+                <div id="modalContent">
+                    <!-- Konten detail akan dimuat di sini oleh JavaScript -->
+                </div>
+            </div>
         </div>
 
 
-        <!-- JavaScript untuk mengontrol menu burger dan navigasi halaman -->
+        <!-- JavaScript untuk mengontrol menu burger, navigasi, dan SUPABASE -->
         <script>
+            // Global variable for Supabase
+            let supabase;
+            let isAdminLoggedIn = false; // State untuk tracking login admin
+
+            // FUNGSI INTI SUPABASE
+            function initSupabase() {
+                // DANGER: Kunci API (anon key) Anda terekspos di sisi klien.
+                // Ini aman untuk RLS (Row Level Security) tetapi merupakan praktik yang buruk untuk
+                // membiarkannya langsung di dalam kode. Sebaiknya gunakan variabel lingkungan
+                // jika aplikasi ini memiliki backend.
+                const supabaseUrl = 'https://xzchpfbcmusknizzmgke.supabase.co';
+                const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6Y2hwZmJjbXVza25penptZ2tlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAyMTU3MjQsImV4cCI6MjA3NTc5MTcyNH0.g38f6c7R6YOMA2BNy4l9f2oWzB6JzIPAJ6uLF9Lh6a0';
+                
+                // Cek jika Supabase Client sudah tersedia dari CDN
+                if (window.supabase) {
+                    supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+                    console.log("Supabase client initialized.");
+                } else {
+                    console.error("Supabase client not found. Make sure the script is loaded in the <head>.");
+                }
+            }
+            
+            // FUNGSI UNTUK MENGUBAH FILE MENJADI BASE64
+            // PERHATIAN: Menyimpan gambar sebagai Base64 di database bisa menjadi tidak efisien.
+            // Praktik terbaik adalah mengunggah file ke Supabase Storage dan menyimpan URL-nya di database.
+            function fileToBase64(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = error => reject(error);
+                    reader.readAsDataURL(file);
+                });
+            }
+            
+            // FUNGSI UNTUK PRATINJAU GAMBAR
+            function previewImage(event) {
+                const file = event.target.files[0];
+                const preview = document.getElementById('imagePreview');
+                const statusDiv = document.getElementById('employeeStatus');
+
+                if (file) {
+                    if (file.size > 500 * 1024) { // Batas 500KB
+                        statusDiv.textContent = "Error: Ukuran file melebihi batas 500KB!";
+                        statusDiv.className = 'text-center p-3 rounded-lg mb-4 bg-red-100 text-red-700';
+                        event.target.value = "";    
+                        preview.src = "https://placehold.co/100x100/eeeeee/333333?text=Max+500KB";
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    preview.src = "https://placehold.co/100x100/eeeeee/333333?text=Pratinjau+Foto";
+                }
+                statusDiv.classList.add('hidden');
+            }
+
+
             // FUNGSI NAVIGASI HALAMAN
             function showPage(pageId) {
-                // Sembunyikan semua konten halaman
-                document.querySelectorAll('.page-content').forEach(page => {
-                    page.classList.add('hidden');
-                });
-                // Tampilkan halaman yang diminta
+                const currentPage = document.querySelector('.page-content:not(.hidden)');
                 const targetPage = document.getElementById(pageId);
-                if (targetPage) {
-                    targetPage.classList.remove('hidden');
-                    // Tambahkan kembali kelas flex untuk centering (khusus untuk page-content yang tidak menggunakan main)
-                    if(targetPage.id !== 'mainHero') {
-                         targetPage.classList.add('flex');
-                    }
-                }
                 
-                // Kontrol Tombol Burger dan Logout
-                const burgerContainer = document.getElementById('burgerContainer');
-                const logoutButton = document.getElementById('adminLogoutButton'); // Tombol Logout baru di header
+                if (!targetPage || targetPage === currentPage) return;    
 
-                // Logika untuk menyembunyikan burger button
-                if (pageId === 'adminDashboard' || pageId === 'userMenu' || pageId === 'adminLogin') {
-                    // Sembunyikan burger button
-                    burgerContainer.classList.add('hidden');
+                // 1. Kontrol State Aplikasi untuk Header
+                const body = document.body;
+                const adminPages = ['adminDashboard', 'employeeInputPage', 'employeeListPage', 'productionReportPage'];
+                const userPages = ['userMenu', 'biodataPage', 'userProblemPage', 'userProductionPage'];
+
+                if (adminPages.includes(pageId)) {
+                    body.setAttribute('data-app-state', 'admin-view');
+                } else if (userPages.includes(pageId)) {
+                    body.setAttribute('data-app-state', 'user-view');
                 } else {
-                    // Tampilkan burger button di halaman lainnya
-                    burgerContainer.classList.remove('hidden');
+                    body.setAttribute('data-app-state', 'public-view');
                 }
-                
-                // Logika untuk menampilkan tombol Logout (Hanya di Admin Dashboard)
-                if (pageId === 'adminDashboard') {
-                    logoutButton.classList.remove('hidden');
-                } else {
-                    logoutButton.classList.add('hidden');
+
+                // Jika pindah MASUK ke halaman yang perlu data, panggil fungsi load
+                if (pageId === 'employeeListPage') {
+                    loadEmployeeData();
+                } else if (pageId === 'employeeInputPage') {
+                    loadAdminEmployeeList(); // Muat daftar saat halaman update dibuka
+                    document.getElementById('addEmployeeFormSection').classList.add('hidden');
+                    document.getElementById('employeeListSection').classList.remove('hidden');
                 }
-                
-                // Pastikan menu burger tertutup setelah navigasi
+
+                // Tutup menu burger jika terbuka
                 const navMenu = document.getElementById('navMenu');
-                const menuButton = document.getElementById('menuButton');
-                const iconMenu = document.getElementById('iconMenu');
-                const iconClose = document.getElementById('iconClose');
-
                 if (navMenu && !navMenu.classList.contains('hidden')) {
-                    navMenu.classList.add('hidden');
-                    iconMenu.classList.remove('hidden');
-                    iconClose.classList.add('hidden');
-                    menuButton.setAttribute('aria-expanded', 'false');
+                    document.getElementById('menuButton').click();
+                }
+
+                // 2. LOGIKA TRANSISI
+                if (currentPage) {
+                    currentPage.classList.remove('opacity-100');
+                    currentPage.classList.add('opacity-0');
+
+                    setTimeout(() => {
+                        currentPage.classList.add('hidden');
+                        targetPage.classList.remove('hidden');
+                        targetPage.classList.toggle('flex', targetPage.id !== 'mainHero');
+                        setTimeout(() => {
+                            targetPage.classList.remove('opacity-0');
+                            targetPage.classList.add('opacity-100');
+                        }, 50);
+                    }, 300);    
+                } else {
+                    targetPage.classList.remove('hidden');
+                    targetPage.classList.toggle('flex', targetPage.id !== 'mainHero');
+                    setTimeout(() => {
+                        targetPage.classList.remove('opacity-0');
+                        targetPage.classList.add('opacity-100');
+                    }, 50);
                 }
             }
             
             // FUNGSI LOGIC LOGIN ADMIN
             function handleAdminLogin(event) {
-                event.preventDefault(); // Mencegah form submission standar
-
+                event.preventDefault();    
                 const usernameInput = document.getElementById('adminUsername');
                 const passwordInput = document.getElementById('adminPassword');
                 const messageDiv = document.getElementById('loginMessage');
-                
                 const username = usernameInput.value.trim();
                 const password = passwordInput.value.trim();
 
-                // Kredensial hardcode
+                // DANGER: Kredensial tidak boleh di-hardcode di sisi klien.
+                // Ini sangat tidak aman. Gunakan sistem otentikasi yang sebenarnya seperti Supabase Auth.
+                // Ini hanya untuk keperluan demonstrasi.
                 const VALID_USERNAME = 'entrydata';
                 const VALID_PASSWORD = 'admshinpo';
 
                 messageDiv.classList.add('hidden');
-                messageDiv.innerHTML = '';
                 
                 if (username === VALID_USERNAME && password === VALID_PASSWORD) {
-                    // Login Berhasil
-                    usernameInput.value = ''; // Bersihkan input
+                    isAdminLoggedIn = true;
+                    usernameInput.value = '';    
                     passwordInput.value = '';
-                    showPage('adminDashboard'); // Tampilkan halaman Dashboard Admin
+                    showPage('adminDashboard');    
                 } else {
-                    // Login Gagal
                     messageDiv.innerHTML = 'Username atau Password salah. Silakan coba lagi.';
                     messageDiv.classList.remove('hidden');
                 }
             }
 
+            // FUNGSI LOGOUT ADMIN
+            function handleLogout() {
+                isAdminLoggedIn = false;
+                showPage('mainHero');
+            }
+            
+            // FUNGSI SIMPAN DATA KARYAWAN KE SUPABASE
+            async function saveEmployeeData(event) {
+                event.preventDefault();
+                const statusDiv = document.getElementById('employeeStatus');
+                statusDiv.className = 'text-center p-3 rounded-lg mb-4'; // Reset class
+                
+                if (!supabase) {
+                    statusDiv.textContent = "Error: Database belum siap.";
+                    statusDiv.classList.add('bg-red-100', 'text-red-700');
+                    return;
+                }
 
-            // FUNGSI BURGER MENU
+                const form = document.getElementById('employeeForm');
+                const submitButton = form.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.textContent = 'Menyimpan...';
+
+                // Ambil nilai dari form
+                const formData = new FormData(form);
+                
+                // Handle Foto
+                const fotoFile = document.getElementById('fotoKaryawan').files[0];
+                let fotoBase64 = null;
+                if (fotoFile) {
+                    try {
+                        fotoBase64 = await fileToBase64(fotoFile);
+                    } catch (e) {
+                        statusDiv.textContent = "Error: Gagal memproses file foto.";
+                        statusDiv.classList.add('bg-red-100', 'text-red-700');
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Simpan Data';
+                        return;
+                    }
+                }
+
+                // Handle Tanggal (dari YYYY-MM-DD ke DD/MM/YYYY)
+                const dateValue = formData.get('tglMasuk');
+                let formattedDate = '';
+                if (dateValue) {
+                    const [year, month, day] = dateValue.split('-');
+                    formattedDate = `${day}/${month}/${year}`;
+                }
+
+                const employeeData = {
+                    nama: formData.get('nama'),
+                    noAbsen: formData.get('noAbsen'),
+                    tglMasuk: formattedDate,
+                    statusPekerjaan: formData.get('statusPekerjaan'),
+                    bagian: formData.get('bagian'),
+                    pendidikan: formData.get('pendidikan'),
+                    agama: formData.get('agama'),
+                    jenisKelamin: formData.get('jenisKelamin'),
+                    tptTglLahir: formData.get('tptTglLahir'),
+                    statusKawin: formData.get('statusKawin'),
+                    noWa: formData.get('noWa'),
+                    alamat: formData.get('alamat'),
+                    fotoBase64: fotoBase64,
+                };
+                
+                try {
+                    const { error } = await supabase.from('karyawan').insert([employeeData]);
+                    if (error) throw error;
+                    
+                    form.reset();
+                    document.getElementById('imagePreview').src = "https://placehold.co/100x100/eeeeee/333333?text=Pratinjau+Foto";
+
+                    statusDiv.textContent = 'Data karyawan berhasil disimpan!';
+                    statusDiv.classList.add('bg-green-100', 'text-green-700');
+
+                    // Kembali ke daftar setelah 2 detik
+                    setTimeout(() => {
+                        document.getElementById('addEmployeeFormSection').classList.add('hidden');
+                        document.getElementById('employeeListSection').classList.remove('hidden');
+                        loadAdminEmployeeList(); // Muat ulang daftar
+                    }, 2000);
+
+                } catch (error) {
+                    statusDiv.textContent = `Error saat menyimpan data: ${error.message}`;
+                    statusDiv.classList.add('bg-red-100', 'text-red-700');
+                    console.error("Error saving document: ", error);
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Simpan Data';
+                }
+            }
+            
+            // FUNGSI BARU: Render tabel karyawan (bisa dipakai ulang)
+            function renderEmployeeTable(container, data, options = { showActions: false }) {
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<p class="text-center text-gray-500 py-4">Belum ada data karyawan.</p>';
+                    return;
+                }
+
+                const table = document.createElement('table');
+                table.className = 'min-w-full divide-y divide-gray-200';
+                table.innerHTML = `
+                    <thead class="bg-gray-50 sticky top-0 z-10">
+                        <tr>
+                            <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No.</th>
+                            <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Karyawan</th>
+                            <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Absen</th>
+                            <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bagian</th>
+                            <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Masuk</th>
+                            <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            ${options.showActions ? '<th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>' : ''}
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        ${data.map((emp, index) => `
+                            <tr class="hover:bg-gray-50">
+                                <td>${index + 1}</td>
+                                <td>
+                                    <div class="flex items-center space-x-3">
+                                        <img class="w-10 h-10 rounded-full object-cover" src="${emp.fotoBase64 || 'https://placehold.co/40x40/eee/333?text=N/A'}" alt="${emp.nama}">
+                                        <span class="font-medium text-gray-800">${emp.nama}</span>
+                                    </div>
+                                </td>
+                                <td>${emp.noAbsen}</td>
+                                <td>${emp.bagian}</td>
+                                <td>${emp.tglMasuk}</td>
+                                <td>
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        ${emp.statusPekerjaan}
+                                    </span>
+                                </td>
+                                ${options.showActions ? `<td><button onclick="showEmployeeDetailModal(${emp.id})" class="text-blue-600 hover:text-blue-900 text-sm font-medium">Lihat Detail</button></td>` : ''}
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                container.innerHTML = '';
+                container.appendChild(table);
+            }
+
+
+            // FUNGSI Memuat daftar karyawan di halaman admin
+            async function loadAdminEmployeeList() {
+                const container = document.getElementById('adminEmployeeListContainer');
+                container.innerHTML = '<p class="text-center text-gray-500 py-4">Memuat data...</p>';
+                try {
+                    const { data, error } = await supabase.from('karyawan').select('*').order('nama', { ascending: true });
+                    if (error) throw error;
+                    renderEmployeeTable(container, data, { showActions: true });
+                } catch (error) {
+                    container.innerHTML = `<p class="text-red-500 text-center py-4">Gagal memuat data: ${error.message}</p>`;
+                }
+            }
+
+            // FUNGSI UNTUK MEMUAT DATA KARYAWAN (UNTUK ADMIN DI HALAMAN PERMASALAHAN)
+            async function loadEmployeeData() {
+                const container = document.getElementById('employeeTableContainer');
+                container.innerHTML = '<p class="text-center text-gray-500 py-4">Memuat data...</p>';
+                 try {
+                    const { data, error } = await supabase.from('karyawan').select('*').order('nama', { ascending: true });
+                    if (error) throw error;
+                    renderEmployeeTable(container, data, { showActions: true });
+                } catch (error) {
+                    container.innerHTML = `<p class="text-red-500 text-center py-4">Gagal memuat data: ${error.message}</p>`;
+                }
+            }
+
+
+            // FUNGSI Menampilkan modal detail
+            async function showEmployeeDetailModal(employeeId) {
+                const modal = document.getElementById('employeeDetailModal');
+                const content = document.getElementById('modalContent');
+                content.innerHTML = '<p class="text-center py-8">Memuat detail...</p>';
+                modal.classList.remove('hidden');
+
+                try {
+                    const { data: employee, error } = await supabase.from('karyawan').select().eq('id', employeeId).single();
+                    if (error) throw error;
+
+                    content.innerHTML = `
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="md:col-span-1 flex flex-col items-center text-center">
+                                <img src="${employee.fotoBase64 || 'https://placehold.co/160x160/eee/333?text=N/A'}" class="w-40 h-40 rounded-full object-cover border-4 border-gray-200 mb-4 shadow-md">
+                                <h2 class="text-2xl font-bold text-gray-800">${employee.nama}</h2>
+                                <p class="text-gray-500">${employee.noAbsen}</p>
+                            </div>
+                            <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-gray-700 text-sm">
+                                <div><strong class="font-semibold text-gray-500 block">Bagian</strong> ${employee.bagian || '-'}</div>
+                                <div><strong class="font-semibold text-gray-500 block">Status</strong> <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">${employee.statusPekerjaan || '-'}</span></div>
+                                <div><strong class="font-semibold text-gray-500 block">Tanggal Masuk</strong> ${employee.tglMasuk || '-'}</div>
+                                <div><strong class="font-semibold text-gray-500 block">Tempat, Tgl Lahir</strong> ${employee.tptTglLahir || '-'}</div>
+                                <div><strong class="font-semibold text-gray-500 block">Jenis Kelamin</strong> ${employee.jenisKelamin || '-'}</div>
+                                <div><strong class="font-semibold text-gray-500 block">Agama</strong> ${employee.agama || '-'}</div>
+                                <div><strong class="font-semibold text-gray-500 block">Pendidikan</strong> ${employee.pendidikan || '-'}</div>
+                                30
+                                <div><strong class="font-semibold text-gray-500 block">Status Kawin</strong> ${employee.statusKawin || '-'}</div>
+                                <div class="sm:col-span-2"><strong class="font-semibold text-gray-500 block">No. WhatsApp</strong> ${employee.noWa || '-'}</div>
+                                <div class="sm:col-span-2"><strong class="font-semibold text-gray-500 block">Alamat</strong> ${employee.alamat || '-'}</div>
+                            </div>
+                        </div>
+                    `;
+                } catch (error) {
+                     content.innerHTML = `<p class="text-red-500 text-center py-8">Gagal memuat detail: ${error.message}</p>`;
+                }
+            }
+
+
+            // FUNGSI PENCARIAN KARYAWAN (UNTUK PENGGUNA)
+            async function searchEmployee(event) {
+                event.preventDefault();
+                const searchName = document.getElementById('searchName').value.trim().toUpperCase();
+                const resultsContainer = document.getElementById('searchResultContainer');
+
+                if (!searchName) {
+                    resultsContainer.innerHTML = '<p class="text-center text-yellow-600">Harap masukkan nama untuk mencari.</p>';
+                    return;
+                }
+                
+                resultsContainer.innerHTML = `<p class="text-center text-gray-500 py-4">Mencari...</p>`;
+
+                try {
+                    const { data, error } = await supabase.from('karyawan').select().ilike('nama', `%${searchName}%`);
+                    if (error) throw error;
+                    displaySearchResults(data);
+                } catch (error) {
+                     resultsContainer.innerHTML = `<p class="text-center text-red-600">Terjadi kesalahan: ${error.message}</p>`;
+                }
+            }
+
+            // FUNGSI UNTUK MENAMPILKAN HASIL PENCARIAN (REVISI SUSUNAN DAN JARAK)
+            function displaySearchResults(results) {
+                const resultsContainer = document.getElementById('searchResultContainer');
+                
+                if (!results || results.length === 0) {
+                    resultsContainer.innerHTML = '<p class="text-center text-gray-500">Data karyawan tidak ditemukan.</p>';
+                    return;
+                }
+
+                resultsContainer.innerHTML = results.map(employee => `
+                    <div class="border border-gray-200 rounded-xl p-6 shadow-2xl hover:shadow-3xl transition-shadow w-full">
+                        
+                        <!-- Kontainer Utama: Flex 2 Kolom (Kiri: Foto/Nama, Kanan: Detail Data) -->
+                        <div class="flex flex-col sm:flex-row gap-6">
+                            
+                            <!-- KOLOM KIRI (FOTO, NAMA, NO. ABSEN) -->
+                            <div class="flex flex-col items-center sm:items-start w-full sm:w-1/3 text-center sm:text-left pt-2">
+                                <img 
+                                    src="${employee.fotoBase64 || 'https://placehold.co/150x150/eeeeee/333333?text=N/A'}" 
+                                    alt="Foto ${employee.nama}" 
+                                    class="w-32 h-32 rounded-full object-cover border-4 border-red-500 shadow-lg mb-4"
+                                >
+                                <div class="w-full">
+                                    <h3 class="text-xl font-extrabold text-gray-900">${employee.nama}</h3>
+                                    <p class="text-md font-medium text-gray-600">${employee.noAbsen}</p>
+                                </div>
+                            </div>
+
+                            <!-- KOLOM KANAN (DETAIL DATA) -->
+                            <!-- Menggunakan space-y-3 untuk jarak antar baris yang lebih rapi (sesuai contoh) -->
+                            <div class="w-full sm:w-2/3 text-sm text-gray-700 space-y-3 pt-2">
+                                
+                                <!-- Baris-baris Data: Menggunakan grid 2 kolom dengan 2 kolom kecil di dalamnya -->
+                                
+                                <div class="grid grid-cols-4 gap-x-2 items-center">
+                                    <!-- Bagian -->
+                                    <p class="col-span-2 data-label">Bagian</p>
+                                    <p class="col-span-2 text-right data-value">${employee.bagian}</p>
+
+                                    <!-- Status (Menggunakan 4 kolom penuh di mobile, 2 kolom data di desktop) -->
+                                    <p class="col-span-2 data-label">Status</p>
+                                    <p class="col-span-2 text-right">
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">${employee.statusPekerjaan}</span>
+                                    </p>
+                                </div>
+
+                                <div class="grid grid-cols-4 gap-x-2 items-center">
+                                    <!-- Tanggal Masuk -->
+                                    <p class="col-span-2 data-label">Tanggal Masuk</p>
+                                    <p class="col-span-2 text-right data-value">${employee.tglMasuk}</p>
+
+                                    <!-- Tempat, Tgl Lahir -->
+                                    <p class="col-span-2 data-label">Tempat, Tgl Lahir</p>
+                                    <p class="col-span-2 text-right data-value">${employee.tptTglLahir}</p>
+                                </div>
+                                
+                                <div class="grid grid-cols-4 gap-x-2 items-center">
+                                    <!-- Jenis Kelamin -->
+                                    <p class="col-span-2 data-label">Jenis Kelamin</p>
+                                    <p class="col-span-2 text-right data-value">${employee.jenisKelamin || '-'}</p>
+
+                                    <!-- Agama -->
+                                    <p class="col-span-2 data-label">Agama</p>
+                                    <p class="col-span-2 text-right data-value">${employee.agama || '-'}</p>
+                                </div>
+                                
+                                <div class="grid grid-cols-4 gap-x-2 items-center">
+                                    <!-- Pendidikan -->
+                                    <p class="col-span-2 data-label">Pendidikan</p>
+                                    <p class="col-span-2 text-right data-value">${employee.pendidikan || '-'}</p>
+
+                                    <!-- Status Kawin -->
+                                    <p class="col-span-2 data-label">Status Kawin</p>
+                                    <p class="col-span-2 text-right data-value">${employee.statusKawin || '-'}</p>
+                                </div>
+                                
+                                <!-- No. WA (Baris Penuh) -->
+                                <div class="grid grid-cols-4 gap-x-2 items-center">
+                                    <p class="col-span-2 data-label">No. WhatsApp</p>
+                                    <p class="col-span-2 text-right data-value">${employee.noWa || '-'}</p>
+                                </div>
+
+                                <!-- Alamat (Kolom Penuh) -->
+                                <div class="pt-2">
+                                    <p class="data-label mb-1">Alamat:</p>
+                                    <!-- Mengatur rata kiri untuk nilai alamat -->
+                                    <p class="data-value">${employee.alamat}</p>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // FUNGSI UNTUK MENGHANDLE SUBMIT FORM KONTAK (SIMULASI)
+            function handleContactSubmit(event) {
+                event.preventDefault();
+                const form = event.target;
+                const button = form.querySelector('button[type="submit"]');
+                button.disabled = true;
+                button.textContent = 'Mengirim...';
+
+                setTimeout(() => {
+                    form.reset();
+                    button.disabled = false;
+                    button.textContent = 'Kirim';
+                    // Menggunakan notifikasi custom, bukan alert
+                    alert('Pesan Anda telah terkirim! (Ini adalah simulasi)');
+                }, 1500);
+            }
+
+            // --- EVENT LISTENERS ---
             document.addEventListener('DOMContentLoaded', () => {
+                // Inisialisasi Supabase
+                initSupabase();
+
+                // Tombol di halaman update karyawan
+                document.getElementById('showAddFormButton').addEventListener('click', () => {
+                    document.getElementById('employeeListSection').classList.add('hidden');
+                    document.getElementById('addEmployeeFormSection').classList.remove('hidden');
+                });
+
+                document.getElementById('cancelAddFormButton').addEventListener('click', () => {
+                    document.getElementById('addEmployeeFormSection').classList.add('hidden');
+                    document.getElementById('employeeListSection').classList.remove('hidden');
+                });
+                
+                // Event listener untuk modal
+                const modal = document.getElementById('employeeDetailModal');
+                document.getElementById('closeModalButton').addEventListener('click', () => modal.classList.add('hidden'));
+                modal.addEventListener('click', (event) => {
+                    if (event.target.id === 'employeeDetailModal') { // Hanya tutup jika klik di background
+                        modal.classList.add('hidden');
+                    }
+                });
+                
+                // Burger Menu
                 const menuButton = document.getElementById('menuButton');
                 const navMenu = document.getElementById('navMenu');
                 const iconMenu = document.getElementById('iconMenu');
                 const iconClose = document.getElementById('iconClose');
 
-                // Aksi klik tombol burger
                 menuButton.addEventListener('click', () => {
                     const isExpanded = menuButton.getAttribute('aria-expanded') === 'true';
-                    
-                    if (isExpanded) {
-                        // Tutup menu
-                        navMenu.classList.add('hidden');
-                        iconMenu.classList.remove('hidden');
-                        iconClose.classList.add('hidden');
-                        menuButton.setAttribute('aria-expanded', 'false');
-                    } else {
-                        // Buka menu
-                        navMenu.classList.remove('hidden');
-                        iconMenu.classList.add('hidden');
-                        iconClose.classList.remove('hidden');
-                        menuButton.setAttribute('aria-expanded', 'true');
-                    }
+                    navMenu.classList.toggle('hidden');
+                    iconMenu.classList.toggle('hidden');
+                    iconClose.classList.toggle('hidden');
+                    menuButton.setAttribute('aria-expanded', !isExpanded);
                 });
 
-                // Tutup menu ketika mengklik di luar area menu
+                // Klik di luar untuk menutup menu
                 document.addEventListener('click', (event) => {
                     const burgerContainer = document.getElementById('burgerContainer');
                     if (burgerContainer && !burgerContainer.contains(event.target)) {
                          if (menuButton.getAttribute('aria-expanded') === 'true') {
-                            navMenu.classList.add('hidden');
-                            iconMenu.classList.remove('hidden');
-                            iconClose.classList.add('hidden');
-                            menuButton.setAttribute('aria-expanded', 'false');
+                            menuButton.click();
                         }
                     }
                 });
-
-                // Tambahkan fungsionalitas klik logo untuk kembali ke beranda
-                const logo = document.querySelector('header img');
-                if (logo) {
-                    logo.addEventListener('click', () => showPage('mainHero'));
-                }
             });
             
-            // Tampilkan halaman awal saat DOM dimuat
-            document.addEventListener('DOMContentLoaded', () => {
-                 showPage('mainHero');
-            });
+            // Ekspor fungsi ke window object agar bisa diakses dari HTML
+            window.showPage = showPage;
+            window.handleAdminLogin = handleAdminLogin;
+            window.handleLogout = handleLogout;
+            window.saveEmployeeData = saveEmployeeData;
+            window.previewImage = previewImage;
+            window.showEmployeeDetailModal = showEmployeeDetailModal;
+            window.searchEmployee = searchEmployee;
+            window.handleContactSubmit = handleContactSubmit;
         </script>
         
     </div>
