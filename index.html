@@ -36,16 +36,21 @@
         #adminLogoutButton { display: none; }
 
         /* State admin: Sembunyikan navigasi publik & burger, tampilkan tombol logout */
+        /* REVISI: Tambahkan user-view untuk menyembunyikan burger di menu pengguna */
         body[data-app-state="admin-view"] #desktopNav,
-        body[data-app-state="admin-view"] #burgerContainer {
+        body[data-app-state="admin-view"] #burgerContainer,
+        body[data-app-state="user-view"] #burgerContainer,
+        body[data-app-state="user-view"] #desktopNav {
             display: none;
         }
+
         body[data-app-state="admin-view"] #adminLogoutButton {
             display: block;
         }
 
         /* State pengguna: Sembunyikan navigasi desktop, tampilkan burger */
-        body[data-app-state="user-view"] #desktopNav { display: none; }
+        /* BARIS INI TIDAK DIPERLUKAN LAGI KARENA DIGABUNGKAN DI ATAS */
+        /* body[data-app-state="user-view"] #desktopNav { display: none; } */
         
         /* Styling untuk input tanggal agar terlihat konsisten */
         input[type="date"]::-webkit-calendar-picker-indicator {
@@ -60,8 +65,37 @@
             color: #4b5563; /* gray-700 */
         }
         .data-value {
-            font-weight: 500; /* Medium */
+            font-weight: 600;
             color: #1f2937; /* gray-900 */
+            text-align: right;
+        }
+        .detail-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Membagi menjadi dua kolom utama */
+            gap: 0; /* Menghilangkan gap agar terlihat seperti tabel */
+            border-bottom: 1px dashed #e5e7eb; /* Garis pemisah antar baris */
+            padding-top: 8px;
+            padding-bottom: 8px;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .detail-label {
+            font-weight: 500;
+            color: #4b5563; /* gray-600 */
+        }
+        .detail-value {
+            font-weight: 600;
+            color: #1f2937; /* gray-900 */
+            text-align: right;
+        }
+        .detail-row-full {
+             /* Untuk alamat atau kolom penuh */
+             display: block;
+             border-bottom: 1px dashed #e5e7eb;
+             padding-top: 8px;
+             padding-bottom: 8px;
         }
 
         /* Style untuk tombol kembali (Teks Rata Kiri - Tanpa Background/Shadow) */
@@ -101,6 +135,60 @@
             transition: background-color 0.3s;
         }
         
+        /* Gaya untuk Logo Placeholder - SHINPO */
+        /* Kelas ini dihapus karena diganti IMG */
+        
+        /* Gaya untuk Teks Deskripsi Logo */
+        .logo-text {
+            font-size: 0.8rem; /* Ukuran lebih kecil dari SHINPO Logo */
+            line-height: 1;
+            color: #1f2937; /* Gray-900 */
+            font-weight: 500;
+        }
+        /* Kelas baru untuk memastikan gambar logo sejajar dengan teks */
+        .logo-img {
+            height: 40px; /* Tinggi logo agar sejajar dengan dua baris teks */
+            width: auto;
+        }
+        
+        /* CSS Tambahan: Untuk Full-width Carousel */
+        /* Header memiliki tinggi sekitar 60px. Kita perlu menggeser carousel ke bawah sebesar itu */
+        #mainCarouselContainer {
+            position: relative;
+            z-index: 20; /* Lebih rendah dari header (z-50) */
+            margin-top: 64px; /* Memberi ruang di bawah fixed header */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06); /* Shadow agar terpisah dari hero */
+        }
+        /* Style untuk modal detail (agar tampilan detail seperti tabel) */
+        .detail-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Membagi menjadi dua kolom utama */
+            gap: 0; /* Menghilangkan gap agar terlihat seperti tabel */
+            border-bottom: 1px dashed #e5e7eb; /* Garis pemisah antar baris */
+            padding-top: 8px;
+            padding-bottom: 8px;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .detail-label {
+            font-weight: 500;
+            color: #4b5563; /* gray-600 */
+        }
+        .detail-value {
+            font-weight: 600;
+            color: #1f2937; /* gray-900 */
+            text-align: right;
+        }
+        .detail-row-full {
+             /* Untuk alamat atau kolom penuh */
+             display: block;
+             border-bottom: 1px dashed #e5e7eb;
+             padding-top: 8px;
+             padding-bottom: 8px;
+        }
+
     </style>
 </head>
 <body class="bg-gray-50" data-app-state="public-view">
@@ -108,19 +196,22 @@
     <!-- Kontainer Utama -->
     <div class="min-h-screen relative flex flex-col justify-center pb-16">
         
-        <!-- Navigasi Bar / Header -->
-        <header id="appHeader" class="absolute top-0 left-0 right-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 z-50 bg-gray-50">
+        <!-- Navigasi Bar / Header (Fixed di atas) -->
+        <header id="appHeader" class="fixed top-0 left-0 right-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 z-50 bg-gray-50 shadow-md">
             <nav class="flex items-center justify-between w-full">
                 <!-- Logo SHINPO (KIRI - SELALU TERLIHAT) -->
-                <div class="flex items-center">
-                    <img    
-                        src="https://www.shinpo.co.id/wp-content/uploads/2019/09/shinpo-logo-mobile.png"
-                        class="h-10 w-auto"
-                        alt="Logo SHINPO"
-                        onerror="this.onerror=null;this.src='https://placehold.co/120x40/FF0000/FFFFFF?text=SHINPO'"
-                        onclick="showPage('mainHero')"    
-                        style="cursor: pointer;"
-                    >
+                <div class="flex items-center space-x-2" onclick="showPage('mainHero')" style="cursor: pointer;">
+                    
+                    <!-- Logo Utama (Ganti dengan tag IMG untuk URL) -->
+                    <img 
+                        id="mainLogoImage"
+                        src="https://www.shinpo.co.id/wp-content/uploads/2019/09/shinpo-logo-mobile.png" 
+                        alt="Logo SHINPO" 
+                        class="logo-img"
+                    />
+
+                    <!-- Teks Deskripsi (Plastic Houseware...) - DIHAPUS -->
+                    
                 </div>
 
                 <!-- Kontainer Kanan (Menu Navigasi Desktop & Burger / Logout) -->
@@ -179,60 +270,54 @@
             </nav>
         </header>
         
-        <!-- 1. HALAMAN UTAMA (HERO) -->
-        <main id="mainHero" class="page-content page-content-transition max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 opacity-100">
-            <!-- Menyesuaikan agar Carousel berada di atas dan teks Hero di bawahnya (optional) -->
-            <!-- MENGURANGI JARAK PT-24 SM:PT-32 MENJADI PT-20 SM:PT-24 -->
-            <div class="flex flex-col items-center justify-center pt-20 sm:pt-24">    
+        <!-- FULL-WIDTH CAROUSEL CONTAINER (BARU) -->
+        <!-- Memastikan carousel di luar batasan max-w dari mainHero -->
+        <div id="mainCarouselContainer" class="w-full">
+             <!-- CAROUSEL BANNER (16:9 aspect ratio) -->
+            <div id="mainCarousel" class="relative w-full overflow-hidden shadow-2xl" style="padding-top: 56.25%;"> <!-- 16:9 Aspect Ratio -->
                 
-                <!-- CAROUSEL BANNER (16:9 aspect ratio) -->
-                <div id="mainCarousel" class="relative w-full overflow-hidden rounded-xl shadow-2xl mb-12" style="padding-top: 56.25%;"> <!-- 16:9 Aspect Ratio -->
-                    
-                    <!-- Item Carousel 1: Wadah Plastik -->
-                    <div class="carousel-item active">
-                        <img src="https://www.shinpo.co.id/wp-content/uploads/2024/09/341-5.jpg" alt="Wadah Penyimpanan Plastik" class="absolute inset-0 w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-black bg-opacity-30 flex flex-col items-center justify-center p-8 text-center">
-                            <h2 class="text-3xl sm:text-5xl font-extrabold text-white">INOVASI PENYIMPANAN</h2>
-                            <p class="text-lg sm:text-xl text-gray-200 mt-2">Wadah Plastik Berkualitas Tinggi, Tahan Banting</p>
-                        </div>
+                <!-- Item Carousel 1: Wadah Plastik -->
+                <div class="carousel-item active">
+                    <img src="https://i.ytimg.com/vi/FZOv0lTINTY/maxresdefault.jpg" alt="Wadah Penyimpanan Plastik" class="absolute inset-0 w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black bg-opacity-30 flex flex-col items-center justify-center p-8 text-center">
+                        <h2 class="text-3xl sm:text-5xl font-extrabold text-white">INOVASI PENYIMPANAN</h2>
+                        <p class="text-lg sm:text-xl text-gray-200 mt-2">Wadah Plastik Berkualitas Tinggi, Tahan Banting</p>
                     </div>
-
-                    <!-- Item Carousel 2: Furnitur Plastik -->
-                    <div class="carousel-item">
-                        <img src="https://www.shinpo.co.id/wp-content/uploads/2020/09/mini-container.jpg" alt="Kursi dan Meja Plastik" class="absolute inset-0 w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-black bg-opacity-30 flex flex-col items-center justify-center p-8 text-center">
-                            <h2 class="text-3xl sm:text-5xl font-extrabold text-white">FURNITUR TAHAN LAMA</h2>
-                            <p class="text-lg sm:text-xl text-gray-200 mt-2">Desain Modern untuk Rumah dan Industri</p>
-                        </div>
-                    </div>
-
-                    <!-- Item Carousel 3: Produk Rumah Tangga -->
-                    <div class="carousel-item">
-                        <img src="https://www.shinpo.co.id/wp-content/uploads/2020/02/banner-1-2.jpg" alt="Ember dan Peralatan Rumah Tangga" class="absolute inset-0 w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-black bg-opacity-30 flex flex-col items-center justify-center p-8 text-center">
-                            <h2 class="text-3xl sm:text-5xl font-extrabold text-white">PELOPOR KUALITAS</h2>
-                            <p class="text-lg sm:text-xl text-gray-200 mt-2">Produk Rumah Tangga Terpercaya Sejak 1982</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Tombol Navigasi (Panah Kiri/Kanan) -->
-                    <button onclick="changeSlide(-1)" class="carousel-nav-button absolute top-1/2 left-4 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-80 transition">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-                    </button>
-                    <button onclick="changeSlide(1)" class="carousel-nav-button absolute top-1/2 right-4 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-80 transition">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                    </button>
-
                 </div>
-                <!-- END CAROUSEL BANNER -->
 
+                <!-- Item Carousel 2: Furnitur Plastik -->
+                <div class="carousel-item">
+                    <img src="https://lh5.googleusercontent.com/p/AF1QipOF2dgy1a188H9MhQvKG10RKxOE9uhAL51TxYn2=w483-h240-k-no" alt="Kursi dan Meja Plastik" class="absolute inset-0 w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black bg-opacity-30 flex flex-col items-center justify-center p-8 text-center">
+                        <h2 class="text-3xl sm:text-5xl font-extrabold text-white">FURNITURE TAHAN LAMA</h2>
+                        <p class="text-lg sm:text-xl text-gray-200 mt-2">Desain Modern untuk Rumah dan Industri</p>
+                    </div>
+                </div>
 
-                <!-- Teks Hero (DIKEMBALIKAN) -->
+                <!-- Item Carousel 3: Produk Rumah Tangga -->
+                <div class="carousel-item">
+                    <img src="https://down-id.img.susercontent.com/file/id-11134207-7rasm-m2lwarhw5cqs26" alt="Ember dan Peralatan Rumah Tangga" class="absolute inset-0 w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black bg-opacity-30 flex flex-col items-center justify-center p-8 text-center">
+                        <h2 class="text-3xl sm:text-5xl font-extrabold text-white">PELOPOR KUALITAS</h2>
+                        <p class="text-lg sm:text-xl text-gray-200 mt-2">Produk Rumah Tangga Terpercaya Sejak 1982</p>
+                    </div>
+                </div>
+                
+            </div>
+            <!-- END CAROUSEL BANNER -->
+        </div>
+
+        <!-- 1. HALAMAN UTAMA (HERO) -->
+        <!-- Menghapus padding-top dan memindahkan konten di bawah carousel ke sini -->
+        <main id="mainHero" class="page-content page-content-transition max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 opacity-100">
+            <div class="flex flex-col items-center justify-center pt-8">    
+                
+                <!-- Teks Hero -->
                 <div class="w-full text-center mb-12 lg:mb-0">
-                    <h1 class="text-2xl sm:text-5xl lg:text-6xl font-extrabold leading-tight text-red-500 mb-3">
+                    <h1 class="text-xl sm:text-4xl lg:text-5xl font-extrabold leading-tight text-red-500 mb-3">
                         Solusi Plastik Terbaik untuk Kebutuhan Rumah Tangga dan Industri Anda
                     </h1>
-                    <p class="text-xl sm:text-1xl font-medium text-blue-900 opacity-90 mb-8">
+                    <p class="text-md sm:text-lg font-medium text-blue-900 opacity-90 mb-8">
                         PT. Sahabat Intim Plasindo, Inovasi dalam Setiap Produk Plastik.
                     </p>
                 </div>
@@ -251,23 +336,23 @@
             
             <div class="space-y-4 w-full">
                 <!-- Opsi 1: Biodata Karyawan (Hijau - Serasi dengan Kelola Karyawan Baru) -->
-                <a href="#" onclick="showPage('biodataPage')" class="block w-full p-4 bg-green-50 text-green-800 text-xl font-medium text-center rounded-lg shadow-md hover:bg-green-100 hover:shadow-lg transition duration-150 border border-green-200">
+                <a href="#" onclick="showPage('biodataPage')" class="block w-full p-3 bg-green-50 text-green-800 text-lg font-medium text-center rounded-lg shadow-md hover:bg-green-100 hover:shadow-lg transition duration-150 border border-green-200">
                     Biodata Karyawan
                 </a>
                 <!-- Opsi 2: Permasalahan Karyawan (Kuning - Serasi dengan Update Permasalahan Karyawan) -->
-                <a href="#" onclick="showPage('userProblemPage')" class="block w-full p-4 bg-yellow-50 text-yellow-800 text-xl font-medium text-center rounded-lg shadow-md hover:bg-yellow-100 hover:shadow-lg transition duration-150 border border-yellow-200">
+                <a href="#" onclick="showPage('employeeListPage')" class="block w-full p-3 bg-yellow-50 text-yellow-800 text-lg font-medium text-center rounded-lg shadow-md hover:bg-yellow-100 hover:shadow-lg transition duration-150 border border-yellow-200">
                     Permasalahan Karyawan
                 </a>
                 <!-- Opsi 3: Permasalahan Produksi (Biru - Serasi dengan Laporan Permasalahan Produksi) -->
-                <a href="#" onclick="showPage('userProductionPage')" class="block w-full p-4 bg-blue-50 text-blue-800 text-xl font-medium text-center rounded-lg shadow-md hover:bg-blue-100 hover:shadow-lg transition duration-150 border border-blue-200">
+                <a href="#" onclick="showPage('userProductionPage')" class="block w-full p-3 bg-blue-50 text-blue-800 text-lg font-medium text-center rounded-lg shadow-md hover:bg-blue-100 hover:shadow-lg transition duration-150 border border-blue-200">
                     Permasalahan Produksi
                 </a>
             </div>
 
-            <!-- Tombol Kembali ke Hero -->
-            <button onclick="showPage('mainHero')" class="mt-8 text-blue-500 hover:text-blue-700 transition duration-150">
+            <!-- Tombol Kembali ke Hero (MENGHAPUS TOMBOL INI) -->
+            <!-- <button onclick="showPage('mainHero')" class="mt-8 text-blue-500 hover:text-blue-700 transition duration-150">
                 &larr; Kembali ke Beranda
-            </button>
+            </button> -->
         </div>
 
         <!-- 3. HALAMAN LOGIN ADMIN -->
@@ -333,19 +418,19 @@
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
                 <!-- Update Karyawan -->
-                <a href="#" onclick="showPage('employeeInputPage')" class="block p-6 bg-green-50 rounded-xl shadow-lg border border-green-200 text-center hover:bg-green-100 transition duration-150">
-                    <h3 class="text-2xl font-bold text-green-800">Update<br>Karyawan</h3>
-                    <p class="text-gray-600 mt-2">Update karyawan baru seperti Nama Karyawan, No. Absen, Bagian, Dll.</p>
+                <a href="#" onclick="showPage('employeeInputPage')" class="block p-5 bg-green-50 rounded-xl shadow-lg border border-green-200 text-center hover:bg-green-100 transition duration-150">
+                    <h3 class="text-xl font-bold text-green-800">Update<br>Karyawan</h3>
+                    <p class="text-gray-600 mt-2 px-1">Update karyawan baru seperti Nama Karyawan, No. Absen, Bagian, Dll.</p>
                 </a>
                 <!-- Update Permasalahan Karyawan -->
-                <a href="#" onclick="showPage('employeeListPage')" class="block p-6 bg-yellow-50 rounded-xl shadow-lg border border-yellow-200 text-center hover:bg-yellow-100 transition duration-150">
-                    <h3 class="text-2xl font-bold text-yellow-800">Update<br>Permasalahan<br>Karyawan</h3>
-                    <p class="text-gray-600 mt-2">Update Permasalahan Karyawan</p>
+                <a href="#" onclick="showPage('employeeListPage')" class="block p-5 bg-yellow-50 rounded-xl shadow-lg border border-yellow-200 text-center hover:bg-yellow-100 transition duration-150">
+                    <h3 class="text-xl font-bold text-yellow-800">Update<br>Permasalahan<br>Karyawan</h3>
+                    <p class="text-gray-600 mt-2 px-1">Update permasalahan, berikan SP atau Potong Gaji.</p>
                 </a>
                 <!-- Update Permasalahan Produksi -->
-                <a href="#" onclick="showPage('productionReportPage')" class="block p-6 bg-blue-50 rounded-xl shadow-lg border border-blue-200 text-center hover:bg-blue-100 transition duration-150">
-                    <h3 class="text-2xl font-bold text-blue-800">Update<br>Permasalahan<br>Produksi</h3>
-                    <p class="text-gray-600 mt-2">Laporan permasalahan produksi seperti adanya barang yang BS atau rusak.</p>
+                <a href="#" onclick="showPage('productionReportPage')" class="block p-5 bg-blue-50 rounded-xl shadow-lg border border-blue-200 text-center hover:bg-blue-100 transition duration-150">
+                    <h3 class="text-xl font-bold text-blue-800">Update<br>Permasalahan<br>Produksi</h3>
+                    <p class="text-gray-600 mt-2 px-1">Laporan permasalahan produksi seperti adanya barang yang BS atau rusak.</p>
                 </a>
             </div>
         </div>
@@ -382,14 +467,21 @@
                     </div>
                 </div>
 
-                <button id="showAddFormButton" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg shadow-lg hover:bg-green-700 transition duration-200">
-                    + Tambah Data Karyawan Baru
-                </button>
+                <!-- Tombol Tambah Data Karyawan Baru (DIUBAH DARI w-full MENJADI w-auto mx-auto DAN DIBUNGKUS DIV UNTUK RATA TENGAH) -->
+                <div class="w-full flex justify-center">
+                    <button id="showAddFormButton" class="w-auto mx-auto bg-green-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-green-700 transition duration-200">
+                        + Tambah Data Karyawan Baru
+                    </button>
+                </div>
             </div>
         
             <!-- Bagian Form Input (Tersembunyi Secara Default) -->
             <div id="addEmployeeFormSection" class="hidden w-full">
                 <h2 class="text-3xl font-extrabold text-green-700 mb-6 text-center">Input Data Karyawan Baru</h2>
+                
+                <!-- WRAPPER UNTUK TOMBOL KEMBALI (RATA KIRI) - DIHAPUS DARI SINI -->
+                <!-- Menghilangkan tombol kembali di sub-halaman Input Data Karyawan Baru -->
+                
                 <div class="w-full bg-white p-6 sm:p-8 rounded-xl shadow-2xl border border-gray-100">
                     <form id="employeeForm" onsubmit="saveEmployeeData(event)">
                         
@@ -525,10 +617,10 @@
                 </div>
             </div>
             
-            <!-- Tombol Kembali ke Dashboard -->
-            <button onclick="showPage('adminDashboard')" class="mt-6 text-blue-500 hover:text-blue-700 transition duration-150">
+            <!-- Tombol Kembali ke Dashboard (DIHAPUS) -->
+            <!-- <button onclick="showPage('adminDashboard')" class="mt-6 text-blue-500 hover:text-blue-700 transition duration-150">
                 &larr; Kembali ke Dashboard Admin
-            </button>
+            </button> -->
         </div>
         
         <!-- 6. HALAMAN DAFTAR KARYAWAN (PERMASALAHAN KARYAWAN) -->
@@ -548,9 +640,8 @@
             </div>
             
             <!-- Tombol Kembali -->
-            <button onclick="showPage('adminDashboard')" class="mt-6 text-blue-500 hover:text-blue-700 transition duration-150">
-                &larr; Kembali ke Dashboard Admin
-            </button>
+            <!-- MENGHAPUS TOMBOL 'Kembali ke Dashboard Admin' dari bagian bawah -->
+            
         </div>
         
         <!-- 7. HALAMAN ABOUT -->
@@ -559,7 +650,7 @@
             <!-- TELAH DIHAPUS: <div class="w-full text-left mb-6"><button onclick="goBack()" class="back-button-flow">&larr; Kembali</button></div> -->
             
             <h2 class="text-4xl font-extrabold text-blue-900 mb-6">Tentang Kami</h2>
-            <p class="text-lg text-gray-600 mb-8">Didirikan pada tahun 1982, PT. Sahabat Intim Plasindo adalah salah satu produsen peralatan rumah tangga dan furnitur plastik terkemuka di Indonesia. Kami berkomitmen untuk terus memperluas pasar, menciptakan produk yang handal dan inovatif, serta meningkatkan praktik bisnis kami untuk menjaga kepuasan pelanggan.</p>
+            <p class="text-lg text-gray-600 mb-8">Didirikan pada tahun 1982, PT. Sahabat Intim Plasindo adalah salah satu produsen peralatan rumah tangga dan furniture plastik terkemuka di Indonesia. Kami berkomitmen untuk terus memperluas pasar, menciptakan produk yang handal dan inovatif, serta meningkatkan praktik bisnis kami untuk menjaga kepuasan pelanggan.</p>
             <p class="text-lg text-gray-600 mb-10">Pertumbuhan kami didorong oleh meningkatnya permintaan pasar, dan desain produk kami berfokus pada fungsi. Selama lebih dari 30 tahun, kami telah menciptakan produk berdasarkan kebutuhan pelanggan dan berfokus pada optimalisasi pengalaman pengguna. Kami berupaya untuk membuat kehidupan sehari-hari lebih nyaman dan teratur, sehingga lebih sederhana dan bebas dari kekacauan.</p>
             <button onclick="showPage('mainHero')" class="mt-8 text-blue-500 hover:text-blue-700 transition duration-150">
                 &larr; Kembali ke Beranda
@@ -639,9 +730,8 @@
             </div>
             
             <!-- Tombol Kembali -->
-            <button onclick="showPage('userMenu')" class="mt-6 text-blue-500 hover:text-blue-700 transition duration-150">
-                &larr; Kembali ke Menu Pengguna
-            </button>
+            <!-- MENGHAPUS TOMBOL 'Kembali ke Menu Pengguna' dari bagian bawah -->
+            
         </div>
 
         <!-- 11. HALAMAN PERMASALAHAN KARYAWAN (PENGGUNA) -->
@@ -713,7 +803,78 @@
                 </div>
             </div>
         </div>
+        
+        <!-- MODAL BARU: INPUT PERMASALAHAN KARYAWAN -->
+        <div id="problemInputModal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-[70]">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative">
+                <button onclick="hideProblemInputModal()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-3xl leading-none">&times;</button>
+                <h3 id="problemModalTitle" class="text-xl font-bold text-yellow-800 mb-2">Input Masalah Karyawan</h3>
+                <div id="problemModalEmployeeInfo" class="text-sm text-gray-600 mb-4 border-b pb-2"></div>
 
+                <form id="problemForm" onsubmit="saveEmployeeProblem(event)">
+                    <input type="hidden" id="problemEmployeeId">
+                    <div id="problemStatus" class="text-center p-3 rounded-lg mb-4 hidden"></div>
+
+                    <!-- Pilihan Jenis Masalah -->
+                    <div class="mb-4">
+                        <label for="problemType" class="block text-sm font-medium text-gray-700 mb-1">Jenis Permasalahan</label>
+                        <select id="problemType" onchange="toggleProblemForm(this.value)" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500 transition">
+                            <option value="" disabled selected>Pilih Jenis</option>
+                            <option value="SP">SP (Surat Peringatan)</option>
+                            <option value="Potong Gaji">Potong Gaji</option>
+                        </select>
+                    </div>
+
+                    <!-- Input SP (Tersembunyi Awal) -->
+                    <div id="spInputs" class="hidden space-y-4 border p-4 rounded-lg bg-red-50 border-red-200">
+                        <h4 class="font-bold text-red-700">Detail SP</h4>
+                        <div>
+                            <label for="spDate" class="block text-sm font-medium text-gray-700 mb-1">Tanggal SP</label>
+                            <input type="date" id="spDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 transition">
+                        </div>
+                        <div>
+                            <label for="spLevel" class="block text-sm font-medium text-gray-700 mb-1">Jumlah SP</label>
+                            <select id="spLevel" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 transition">
+                                <option value="" disabled selected>Pilih Level SP</option>
+                                <option value="SP I">SP I</option>
+                                <option value="SP II">SP II</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="spDetail" class="block text-sm font-medium text-gray-700 mb-1">Detail Masalah</label>
+                            <textarea id="spDetail" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 transition"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Input Potong Gaji (Tersembunyi Awal) -->
+                    <div id="potongGajiInputs" class="hidden space-y-4 border p-4 rounded-lg bg-yellow-50 border-yellow-200">
+                        <h4 class="font-bold text-yellow-700">Detail Potong Gaji</h4>
+                        <div>
+                            <label for="potongDate" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Potong Gaji</label>
+                            <input type="date" id="potongDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500 transition">
+                        </div>
+                        <div>
+                            <label for="potongNominal" class="block text-sm font-medium text-gray-700 mb-1">Nominal Potong Gaji (Rupiah)</label>
+                            <!-- NOTE: Menggunakan type="text" dengan oninput untuk format Rupiah -->
+                            <input type="text" id="potongNominal" oninput="formatRupiah(this)" placeholder="Contoh: 100.000" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500 transition">
+                        </div>
+                        <div>
+                            <label for="potongDetail" class="block text-sm font-medium text-gray-700 mb-1">Detail Masalah</label>
+                            <textarea id="potongDetail" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500 transition"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Simpan -->
+                    <button    
+                        type="submit"    
+                        id="saveProblemButton"
+                        class="w-full bg-yellow-600 text-white font-bold py-3 rounded-lg shadow-md hover:bg-yellow-700 transition duration-200 mt-6"
+                    >
+                        Simpan Permasalahan
+                    </button>
+                </form>
+            </div>
+        </div>
 
         <!-- JavaScript untuk mengontrol menu burger, navigasi, dan SUPABASE -->
         <script>
@@ -761,13 +922,13 @@
             }
 
             function changeSlide(n) {
-                // Stop interval sementara
+                // Tombol manual sudah dihapus, fungsi ini hanya dipanggil oleh interval
                 clearInterval(carouselInterval);
                 
                 slideIndex += n;
                 showSlides();
                 
-                // Restart interval setelah 5 detik jeda manual
+                // Restart interval
                 startCarousel();
             }
 
@@ -835,10 +996,28 @@
                         button.style.display = 'none';
                     } else {
                         // Tombol kembali di dalam wrapper rata kiri, yang kita inginkan
-                        if (button.parentElement.classList.contains('text-left')) {
+                        // Periksa apakah halaman yang ditampilkan adalah halaman Form Input Karyawan
+                        const isEmployeeInputFormVisible = (pageId === 'employeeInputPage' && document.getElementById('addEmployeeFormSection') && !document.getElementById('addEmployeeFormSection').classList.contains('hidden'));
+                        
+                        if (pageId === 'employeeInputPage') {
+                            // Di halaman employeeInputPage, kita cek sub-bagian mana yang terlihat.
+                            if (document.getElementById('employeeListSection') && !document.getElementById('employeeListSection').classList.contains('hidden')) {
+                                // Jika Daftar Karyawan (List) yang terlihat: Tampilkan tombol Kembali
+                                button.style.display = 'inline-block';
+                            } else {
+                                // Jika Form Input Karyawan yang terlihat: Sembunyikan tombol Kembali (karena ada tombol Batal)
+                                button.style.display = 'none';
+                            }
+                        } else if (pageId === 'employeeListPage') {
+                            // Di halaman employeeListPage (Update Permasalahan Karyawan), tombol kembali akan muncul.
+                            button.style.display = 'inline-block'; 
+                        } else if (pageId === 'userMenu') { // Halaman Menu Pengguna
+                             button.style.display = 'inline-block';
+                        } else if (button.parentElement.classList.contains('text-left')) {
+                            // Untuk halaman lain, tampilkan jika ada wrapper rata kiri
                             button.style.display = 'inline-block';
                         } else {
-                            // Tombol kembali di bagian bawah halaman (yang kita tidak inginkan terlihat jika ada tombol di atas)
+                            // Tombol kembali di bagian bawah halaman
                             button.style.display = 'none';
                         }
                     }
@@ -874,11 +1053,16 @@
                     stopCarousel();
                 }
                 if (pageId === 'mainHero') {
+                    // Pastikan carousel terlihat
+                    document.getElementById('mainCarouselContainer').classList.remove('hidden');
                     // Tunggu sedikit setelah transisi untuk memastikan elemen dimuat
                     setTimeout(() => {
                         showSlides();
                         startCarousel(); 
                     }, 50); 
+                } else {
+                    // Sembunyikan carousel jika tidak di mainHero
+                    document.getElementById('mainCarouselContainer').classList.add('hidden');
                 }
 
 
@@ -922,25 +1106,29 @@
                     document.getElementById('menuButton').click();
                 }
 
-                // 6. LOGIKA TRANSISI
+                // 6. LOGIKA TRANSISI (PENTING)
                 if (currentPage) {
+                    // Fade out current page
                     currentPage.classList.remove('opacity-100');
                     currentPage.classList.add('opacity-0');
 
                     setTimeout(() => {
+                        // Hide current page and show target page after fade out
                         currentPage.classList.add('hidden');
                         targetPage.classList.remove('hidden');
                         targetPage.classList.toggle('flex', targetPage.id !== 'mainHero');
                         
-                        // Setelah transisi, pastikan tombol kembali di halaman tujuan terlihat/tersembunyi
+                        // Set visibility for back button before fade in
                         toggleBackButton(pageId);
 
+                        // Fade in target page
                         setTimeout(() => {
                             targetPage.classList.remove('opacity-0');
                             targetPage.classList.add('opacity-100');
-                        }, 300);    
-                    }, 50);
+                        }, 50); // Delay kecil sebelum fade-in
+                    }, 300); // Durasi fade-out (0.3s sesuai CSS transition)
                 } else {
+                    // Initial load/no current page
                     targetPage.classList.remove('hidden');
                     targetPage.classList.toggle('flex', targetPage.id !== 'mainHero');
                     toggleBackButton(pageId); // Set visibility immediately
@@ -1174,6 +1362,78 @@
                 }
             }
 
+            // FUNGSI BARU: Mengubah format tanggal dari YYYY-MM-DD ke DD/MM/YYYY
+            function formatProblemDate(dateString) {
+                if (!dateString) return '-';
+                const [year, month, day] = dateString.split('-');
+                return `${day}/${month}/${year}`;
+            }
+            
+            // FUNGSI BARU: Format Nominal ke Rupiah
+            function formatRupiah(input) {
+                let number_string = input.value.replace(/[^,\d]/g, '').toString(),
+                    split = number_string.split(','),
+                    sisa = split[0].length % 3,
+                    rupiah = split[0].substr(0, sisa),
+                    ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+                if (ribuan) {
+                    separator = sisa ? '.' : '';
+                    rupiah += separator + ribuan.join('.');
+                }
+
+                rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+                input.value = rupiah;
+            }
+
+
+            // FUNGSI BARU: Render list permasalahan (Sekarang mengambil dari Supabase)
+            async function renderProblemList(employeeId) {
+                if (!supabase) return '<p class="text-red-500 italic text-center py-2">Koneksi database bermasalah.</p>';
+
+                try {
+                    const { data: problems, error } = await supabase
+                        .from('employee_problems') // Mengambil data dari tabel baru
+                        .select('*')
+                        .eq('employee_id', employeeId)
+                        .order('problem_date', { ascending: false });
+
+                    if (error) throw error;
+                    
+                    if (problems.length === 0) {
+                        return '<p class="text-gray-500 italic text-center py-2">Tidak ada riwayat permasalahan tercatat.</p>';
+                    }
+
+                    return `
+                        <div class="space-y-3 mt-4 border-t pt-4 border-dashed border-gray-300">
+                            <h4 class="text-lg font-bold text-red-600">Riwayat Permasalahan (${problems.length})</h4>
+                            ${problems.map(p => {
+                                let nominalDisplay = '';
+                                // Nominal sudah berupa float dari Supabase
+                                if (p.problem_type === 'Potong Gaji' && p.nominal !== undefined && p.nominal !== null) {
+                                    // p.nominal.toLocaleString('id-ID') akan bekerja pada float
+                                    nominalDisplay = `Rp ${p.nominal.toLocaleString('id-ID')}`;
+                                }
+                                
+                                return `
+                                    <div class="p-3 border rounded-lg ${p.problem_type === 'SP' ? 'bg-red-50 border-red-200' : 'bg-yellow-50 border-yellow-200'}">
+                                        <p class="font-bold text-md mb-1 ${p.problem_type === 'SP' ? 'text-red-700' : 'text-yellow-700'}">
+                                            ${p.problem_type}: 
+                                            ${p.problem_type === 'SP' ? p.problem_level : nominalDisplay}
+                                        </p>
+                                        <p class="text-xs text-gray-700 mb-1">Tanggal: ${formatProblemDate(p.problem_date)}</p>
+                                        <p class="text-sm italic">${p.detail}</p>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    `;
+                } catch (e) {
+                    console.error("Error fetching problem list:", e);
+                    return '<p class="text-red-500 italic text-center py-2">Gagal memuat riwayat permasalahan.</p>';
+                }
+            }
+
 
             // FUNGSI BARU: Render tabel karyawan (bisa dipakai ulang)
             function renderEmployeeTable(container, data, options = { showActions: false, showCheckboxes: false }) {
@@ -1183,6 +1443,7 @@
                 }
 
                 const showCheckboxes = options.showCheckboxes;
+                const actionButtonText = options.showCheckboxes ? 'Lihat Detail' : 'Input Masalah'; // Teks tombol aksi berbeda
 
                 const table = document.createElement('table');
                 table.className = 'min-w-full divide-y divide-gray-200';
@@ -1226,7 +1487,13 @@
                                         ${emp.statusPekerjaan}
                                     </span>
                                 </td>
-                                ${options.showActions ? `<td><button onclick="showEmployeeDetailModal(${emp.id})" class="text-blue-600 hover:text-blue-900 text-sm font-medium">Lihat Detail</button></td>` : ''}
+                                ${options.showActions ? `
+                                    <td>
+                                        <button onclick="${options.showCheckboxes ? `showEmployeeDetailModal(${emp.id})` : `showProblemInputModal(${emp.id})`}" class="text-blue-600 hover:text-blue-900 text-sm font-medium">
+                                            ${actionButtonText}
+                                        </button>
+                                    </td>` 
+                                : ''}
                             </tr>
                         `).join('')}
                     </tbody>
@@ -1280,31 +1547,257 @@
                 try {
                     const { data: employee, error } = await supabase.from('karyawan').select().eq('id', employeeId).single();
                     if (error) throw error;
+                    
+                    // --- MODIFIKASI: Ambil Riwayat Masalah ---
+                    // Menggunakan Promise.all untuk memastikan renderProblemList selesai
+                    const problemListHtml = await renderProblemList(employee.id); 
 
                     content.innerHTML = `
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            
+                            <!-- KOLOM KIRI (FOTO, NAMA, BAGIAN, NO. ABSEN) -->
                             <div class="md:col-span-1 flex flex-col items-center text-center">
                                 <img src="${employee.fotoBase64 || 'https://placehold.co/160x160/eee/333?text=N/A'}" class="w-40 h-40 rounded-full object-cover border-4 border-gray-200 mb-4 shadow-md">
-                                <h2 class="text-2xl font-bold text-gray-800">${employee.nama}</h2>
-                                <p class="text-gray-500">${employee.noAbsen}</p>
+                                
+                                <!-- Nama Karyawan (1 Baris) -->
+                                <h2 class="text-xl font-bold text-gray-800 mb-1 leading-tight">${employee.nama}</h2> 
+                                
+                                <!-- Bagian (Baru) -->
+                                <p class="text-sm font-medium text-gray-600 mb-2">${employee.bagian || '-'}</p>
+
+                                <!-- No. Absen (HANYA NOMOR SAJA) -->
+                                <p class="text-gray-500 text-sm">${employee.noAbsen}</p>
                             </div>
-                            <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-gray-700 text-sm">
-                                <div><strong class="font-semibold text-gray-500 block">Bagian</strong> ${employee.bagian || '-'}</div>
-                                <div><strong class="font-semibold text-gray-500 block">Status</strong> <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">${employee.statusPekerjaan || '-'}</span></div>
-                                <div><strong class="font-semibold text-gray-500 block">Tanggal Masuk</strong> ${employee.tglMasuk || '-'}</div>
-                                <div><strong class="font-semibold text-gray-500 block">Tempat, Tgl Lahir</strong> ${employee.tptTglLahir || '-'}</div>
-                                <div><strong class="font-semibold text-gray-500 block">Jenis Kelamin</strong> ${employee.jenisKelamin || '-'}</div>
-                                <div><strong class="font-semibold text-gray-500 block">Agama</strong> ${employee.agama || '-'}</div>
-                                <div><strong class="font-semibold text-gray-500 block">Pendidikan</strong> ${employee.pendidikan || '-'}</div>
-                                <div><strong class="font-semibold text-gray-500 block">Status Kawin</strong> ${employee.statusKawin || '-'}</div>
-                                <div class="sm:col-span-2"><strong class="font-semibold text-gray-500 block">No. WhatsApp</strong> ${employee.noWa || '-'}</div>
-                                <div class="sm:col-span-2"><strong class="font-semibold text-gray-500 block">Alamat</strong> ${employee.alamat || '-'}</div>
+
+                            <!-- KOLOM KANAN (DETAIL DATA - Format Tabel Rapi) -->
+                            <div class="md:col-span-2 text-sm text-gray-700 w-full pt-2">
+                                
+                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                                    
+                                    <!-- Status & Tgl Masuk (Pekerjaan) -->
+                                    <div class="detail-row">
+                                        <p class="detail-label">Status</p>
+                                        <p class="detail-value">
+                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">${employee.statusPekerjaan || '-'}</span>
+                                        </p>
+                                    </div>
+                                    <div class="detail-row">
+                                        <p class="detail-label">Tanggal Masuk</p>
+                                        <p class="detail-value">${employee.tglMasuk || '-'}</p>
+                                    </div>
+                                    
+                                    <!-- TTL & Jenis Kelamin (Pribadi) -->
+                                    <div class="detail-row">
+                                        <p class="detail-label">Tempat, Tgl Lahir</p>
+                                        <p class="detail-value">${employee.tptTglLahir || '-'}</p>
+                                    </div>
+                                    <div class="detail-row">
+                                        <p class="detail-label">Jenis Kelamin</p>
+                                        <p class="detail-value">${employee.jenisKelamin || '-'}</p>
+                                    </div>
+                                    <div class="detail-row">
+                                        <p class="detail-label">Agama</p>
+                                        <p class="detail-value">${employee.agama || '-'}</p>
+                                    </div>
+                                    <div class="detail-row">
+                                        <p class="detail-label">Pendidikan</p>
+                                        <p class="detail-value">${employee.pendidikan || '-'}</p>
+                                    </div>
+                                    <div class="detail-row">
+                                        <p class="detail-label">Status Perkawinan</p>
+                                        <p class="detail-value">${employee.statusKawin || '-'}</p>
+                                    </div>
+                                    
+                                    <!-- Kontak -->
+                                    <div class="detail-row">
+                                        <p class="detail-label">No. WhatsApp</p>
+                                        <p class="detail-value">${employee.noWa || '-'}</p>
+                                    </div>
+                                    
+                                    <!-- Alamat (Baris Penuh) -->
+                                    <div class="detail-row-full pt-2">
+                                        <p class="detail-label mb-1">Alamat Lengkap:</p>
+                                        <p class="detail-value text-left">${employee.alamat || '-'}</p>
+                                    </div>
+                                </div>
                             </div>
+                        </div>
+                        
+                        <!-- Riwayat Permasalahan di modal admin -->
+                        <div class="mt-6">
+                            ${problemListHtml}
                         </div>
                     `;
                 } catch (error) {
                      content.innerHTML = `<p class="text-red-500 text-center py-8">Gagal memuat detail: ${error.message}</p>`;
                 }
+            }
+
+            // FUNGSI BARU: Tampilkan Modal Input Permasalahan
+            async function showProblemInputModal(employeeId) {
+                const modal = document.getElementById('problemInputModal');
+                const title = document.getElementById('problemModalTitle');
+                const info = document.getElementById('problemModalEmployeeInfo');
+                const employeeIdField = document.getElementById('problemEmployeeId');
+                const problemTypeSelect = document.getElementById('problemType');
+                
+                // 1. Reset Form dan Status
+                document.getElementById('problemForm').reset();
+                document.getElementById('problemStatus').classList.add('hidden');
+                toggleProblemForm(''); // Sembunyikan semua input spesifik
+                
+                // 2. Ambil Data Karyawan
+                try {
+                    const { data: employee, error } = await supabase.from('karyawan').select('id, nama, noAbsen, bagian').eq('id', employeeId).single();
+                    if (error) throw error;
+                    
+                    // 3. Update Modal Info
+                    title.textContent = `Input Masalah untuk ${employee.nama}`;
+                    info.innerHTML = `
+                        <p class="font-semibold">${employee.nama} (${employee.noAbsen})</p>
+                        <p class="text-sm">Bagian: ${employee.bagian}</p>
+                    `;
+                    employeeIdField.value = employee.id; // Simpan ID karyawan
+                    
+                    // 4. Tampilkan Modal
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    problemTypeSelect.focus();
+
+                } catch (error) {
+                    alert(`Gagal memuat data karyawan: ${error.message}`);
+                }
+            }
+
+            // FUNGSI BARU: Sembunyikan Modal Input Permasalahan
+            function hideProblemInputModal() {
+                document.getElementById('problemInputModal').classList.add('hidden');
+                document.getElementById('problemInputModal').classList.remove('flex');
+            }
+
+            // FUNGSI BARU: Mengganti Form SP/Potong Gaji secara dinamis
+            function toggleProblemForm(type) {
+                const spInputs = document.getElementById('spInputs');
+                const potongGajiInputs = document.getElementById('potongGajiInputs');
+                
+                // Reset required attributes for safety
+                const potongNominalInput = document.getElementById('potongNominal');
+                document.getElementById('spDate').required = false;
+                document.getElementById('spLevel').required = false;
+                document.getElementById('spDetail').required = false;
+                document.getElementById('potongDate').required = false;
+                potongNominalInput.required = false; 
+                document.getElementById('potongDetail').required = false;
+
+                if (type === 'SP') {
+                    spInputs.classList.remove('hidden');
+                    potongGajiInputs.classList.add('hidden');
+                    // Tambahkan atribut required
+                    document.getElementById('spDate').required = true;
+                    document.getElementById('spLevel').required = true;
+                    document.getElementById('spDetail').required = true;
+                } else if (type === 'Potong Gaji') {
+                    potongGajiInputs.classList.remove('hidden');
+                    spInputs.classList.add('hidden');
+                    // Tambahkan atribut required
+                    document.getElementById('potongDate').required = true;
+                    potongNominalInput.required = true; // Nominal required
+                    document.getElementById('potongDetail').required = true;
+                } else {
+                    spInputs.classList.add('hidden');
+                    potongGajiInputs.classList.add('hidden');
+                }
+            }
+            
+            // FUNGSI BARU: Menyimpan Data Permasalahan (FIXED: Tombol, Rupiah, dan Supabase)
+            async function saveEmployeeProblem(event) {
+                event.preventDefault();
+                const form = document.getElementById('problemForm');
+                const employeeId = parseInt(document.getElementById('problemEmployeeId').value);
+                const problemType = document.getElementById('problemType').value;
+                const statusDiv = document.getElementById('problemStatus');
+                const saveButton = document.getElementById('saveProblemButton');
+                
+                statusDiv.classList.add('hidden');
+                
+                // 1. Validasi Input (tanpa menonaktifkan tombol di sini)
+                if (problemType === '') {
+                    showProblemStatus('Harap pilih jenis permasalahan.', 'bg-red-100 text-red-700');
+                    return;
+                }
+                
+                let cleanNominal = null;
+                let problemData = {};
+
+                // Check specific fields based on type
+                if (problemType === 'SP') {
+                    if (!document.getElementById('spDate').value || !document.getElementById('spLevel').value || !document.getElementById('spDetail').value) {
+                         showProblemStatus('Harap lengkapi semua data SP.', 'bg-red-100 text-red-700');
+                         return;
+                    }
+                    problemData = {
+                        employee_id: employeeId,
+                        problem_type: problemType,
+                        problem_date: document.getElementById('spDate').value,
+                        problem_level: document.getElementById('spLevel').value,
+                        detail: document.getElementById('spDetail').value,
+                        nominal: null, // Pastikan kolom nominal null untuk SP
+                    };
+                } else if (problemType === 'Potong Gaji') {
+                    const nominalValue = document.getElementById('potongNominal').value;
+                    // Hapus titik dan koma, dan parse sebagai float
+                    const cleanNominalString = nominalValue.replace(/\./g, '');
+                    cleanNominal = parseFloat(cleanNominalString);
+                    
+                    if (!document.getElementById('potongDate').value || isNaN(cleanNominal) || cleanNominal <= 0 || !document.getElementById('potongDetail').value) {
+                         showProblemStatus('Harap lengkapi Nominal Potong Gaji (angka positif) dan detail.', 'bg-red-100 text-red-700');
+                         return;
+                    }
+
+                    problemData = {
+                        employee_id: employeeId,
+                        problem_type: problemType,
+                        problem_date: document.getElementById('potongDate').value,
+                        nominal: cleanNominal,
+                        detail: document.getElementById('potongDetail').value,
+                        problem_level: null, // Pastikan kolom level null untuk Potong Gaji
+                    };
+                }
+                
+                // 2. Proses Saving State
+                saveButton.disabled = true; // Disable button here, as validation passed
+                saveButton.textContent = 'Menyimpan...';
+
+                // 3. Simpan Data ke Supabase
+                try {
+                    const { error } = await supabase.from('employee_problems').insert([problemData]);
+                    if (error) throw error;
+
+                    // 4. Beri Feedback Sukses
+                    showProblemStatus(`Data ${problemType} berhasil disimpan ke database!`, 'bg-green-100 text-green-700');
+                    
+                    // 5. Tutup Modal dan Reset setelah 2 detik
+                    setTimeout(() => {
+                        hideProblemInputModal();
+                        form.reset();
+                        saveButton.disabled = false;
+                        saveButton.textContent = 'Simpan Permasalahan';
+                    }, 2000);
+
+                } catch (error) {
+                    console.error("Error saving problem:", error);
+                    showProblemStatus(`Gagal menyimpan data: ${error.message}`, 'bg-red-100 text-red-700');
+                    saveButton.disabled = false;
+                    saveButton.textContent = 'Simpan Permasalahan';
+                }
+            }
+
+            // FUNGSI BARU: Tampilkan Status Permasalahan
+            function showProblemStatus(message, className) {
+                const statusDiv = document.getElementById('problemStatus');
+                statusDiv.textContent = message;
+                statusDiv.className = `text-center p-3 rounded-lg mb-4 ${className}`;
+                statusDiv.classList.remove('hidden');
             }
 
 
@@ -1331,7 +1824,7 @@
             }
 
             // FUNGSI UNTUK MENAMPILKAN HASIL PENCARIAN (REVISI SUSUNAN DAN JARAK)
-            function displaySearchResults(results) {
+            async function displaySearchResults(results) { // Tambahkan 'async' di sini
                 const resultsContainer = document.getElementById('searchResultContainer');
                 
                 if (!results || results.length === 0) {
@@ -1339,90 +1832,98 @@
                     return;
                 }
 
-                resultsContainer.innerHTML = results.map(employee => `
+                // Gunakan Promise.all untuk menunggu semua riwayat masalah dimuat
+                const resultHtmlPromises = results.map(async employee => {
+                    // --- MODIFIKASI: Ambil Riwayat Masalah ---
+                    const problemListHtml = await renderProblemList(employee.id);
+
+                    return `
                     <div class="border border-gray-200 rounded-xl p-6 shadow-2xl hover:shadow-3xl transition-shadow w-full">
                         
                         <!-- Kontainer Utama: Flex 2 Kolom (Kiri: Foto/Nama, Kanan: Detail Data) -->
                         <div class="flex flex-col sm:flex-row gap-6">
                             
-                            <!-- KOLOM KIRI (FOTO, NAMA, NO. ABSEN) -->
-                            <div class="flex flex-col items-center sm:items-start w-full sm:w-1/3 text-center sm:text-left pt-2">
+                            <!-- KOLOM KIRI (FOTO, NAMA, BAGIAN, NO. ABSEN) -->
+                            <div class="md:col-span-1 flex flex-col items-center text-center">
                                 <img 
                                     src="${employee.fotoBase64 || 'https://placehold.co/150x150/eeeeee/333333?text=N/A'}" 
                                     alt="Foto ${employee.nama}" 
                                     class="w-32 h-32 rounded-full object-cover border-4 border-red-500 shadow-lg mb-4"
                                 >
                                 <div class="w-full">
-                                    <h3 class="text-xl font-extrabold text-gray-900">${employee.nama}</h3>
-                                    <p class="text-md font-medium text-gray-600">${employee.noAbsen}</p>
+                                    <!-- Nama Karyawan (1 Baris) -->
+                                    <h3 class="text-xl font-bold text-gray-900 mb-1 leading-tight">${employee.nama}</h3>
+                                    
+                                    <!-- Bagian (Baru) -->
+                                    <p class="text-sm font-medium text-gray-600 mb-2">${employee.bagian || '-'}</p>
+
+                                    <!-- No. Absen (HANYA NOMOR SAJA) -->
+                                    <p class="text-gray-500 text-sm">${employee.noAbsen}</p>
                                 </div>
                             </div>
 
-                            <!-- KOLOM KANAN (DETAIL DATA) -->
-                            <!-- Menggunakan space-y-3 untuk jarak antar baris yang lebih rapi (sesuai contoh) -->
-                            <div class="w-full sm:w-2/3 text-sm text-gray-700 space-y-3 pt-2">
+                            <!-- KOLOM KANAN (DETAIL DATA - Format Tabel Rapi) -->
+                            <div class="w-full sm:w-2/3 text-sm text-gray-700 w-full pt-2">
                                 
-                                <!-- Baris-baris Data: Menggunakan grid 2 kolom dengan 2 kolom kecil di dalamnya -->
-                                
-                                <div class="grid grid-cols-4 gap-x-2 items-center">
-                                    <!-- Bagian -->
-                                    <p class="col-span-2 data-label">Bagian</p>
-                                    <p class="col-span-2 text-right data-value">${employee.bagian}</p>
-
-                                    <!-- Status (Menggunakan 4 kolom penuh di mobile, 2 kolom data di desktop) -->
-                                    <p class="col-span-2 data-label">Status</p>
-                                    <p class="col-span-2 text-right">
-                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">${employee.statusPekerjaan}</span>
-                                    </p>
+                                <div class="bg-white border border-gray-200 rounded-lg p-3">
+                                    
+                                    <!-- Status & Tgl Masuk (Pekerjaan) -->
+                                    <div class="detail-row">
+                                        <p class="detail-label">Status</p>
+                                        <p class="detail-value">
+                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">${employee.statusPekerjaan || '-'}</span>
+                                        </p>
+                                    </div>
+                                    <div class="detail-row">
+                                        <p class="detail-label">Tanggal Masuk</p>
+                                        <p class="detail-value">${employee.tglMasuk || '-'}</p>
+                                    </div>
+                                    
+                                    <!-- TTL & Jenis Kelamin (Pribadi) -->
+                                    <div class="detail-row">
+                                        <p class="detail-label">Tempat, Tgl Lahir</p>
+                                        <p class="detail-value">${employee.tptTglLahir || '-'}</p>
+                                    </div>
+                                    <div class="detail-row">
+                                        <p class="detail-label">Jenis Kelamin</p>
+                                        <p class="detail-value">${employee.jenisKelamin || '-'}</p>
+                                    </div>
+                                    <div class="detail-row">
+                                        <p class="detail-label">Agama</p>
+                                        <p class="detail-value">${employee.agama || '-'}</p>
+                                    </div>
+                                    <div class="detail-row">
+                                        <p class="detail-label">Pendidikan</p>
+                                        <p class="detail-value">${employee.pendidikan || '-'}</p>
+                                    </div>
+                                    <div class="detail-row">
+                                        <p class="detail-label">Status Perkawinan</p>
+                                        <p class="detail-value">${employee.statusKawin || '-'}</p>
+                                    </div>
+                                    
+                                    <!-- Kontak -->
+                                    <div class="detail-row">
+                                        <p class="detail-label">No. WhatsApp</p>
+                                        <p class="detail-value">${employee.noWa || '-'}</p>
+                                    </div>
+                                    
+                                    <!-- Alamat (Baris Penuh) -->
+                                    <div class="detail-row-full pt-2">
+                                        <p class="detail-label mb-1">Alamat Lengkap:</p>
+                                        <p class="detail-value text-left">${employee.alamat || '-'}</p>
+                                    </div>
                                 </div>
-
-                                <div class="grid grid-cols-4 gap-x-2 items-center">
-                                    <!-- Tanggal Masuk -->
-                                    <p class="col-span-2 data-label">Tanggal Masuk</p>
-                                    <p class="col-span-2 text-right data-value">${employee.tglMasuk}</p>
-
-                                    <!-- Tempat, Tgl Lahir -->
-                                    <p class="col-span-2 data-label">Tempat, Tgl Lahir</p>
-                                    <p class="col-span-2 text-right data-value">${employee.tptTglLahir}</p>
-                                </div>
-                                
-                                <div class="grid grid-cols-4 gap-x-2 items-center">
-                                    <!-- Jenis Kelamin -->
-                                    <p class="col-span-2 data-label">Jenis Kelamin</p>
-                                    <p class="col-span-2 text-right data-value">${employee.jenisKelamin || '-'}</p>
-
-                                    <!-- Agama -->
-                                    <p class="col-span-2 data-label">Agama</p>
-                                    <p class="col-span-2 text-right data-value">${employee.agama || '-'}</p>
-                                </div>
-                                
-                                <div class="grid grid-cols-4 gap-x-2 items-center">
-                                    <!-- Pendidikan -->
-                                    <p class="col-span-2 data-label">Pendidikan</p>
-                                    <p class="col-span-2 text-right data-value">${employee.pendidikan || '-'}</p>
-
-                                    <!-- Status Kawin -->
-                                    <p class="col-span-2 data-label">Status Kawin</p>
-                                    <p class="col-span-2 text-right data-value">${employee.statusKawin || '-'}</p>
-                                </div>
-                                
-                                <!-- No. WA (Baris Penuh) -->
-                                <div class="grid grid-cols-4 gap-x-2 items-center">
-                                    <p class="col-span-2 data-label">No. WhatsApp</p>
-                                    <p class="col-span-2 text-right data-value">${employee.noWa || '-'}</p>
-                                </div>
-
-                                <!-- Alamat (Kolom Penuh) -->
-                                <div class="pt-2">
-                                    <p class="data-label mb-1">Alamat:</p>
-                                    <!-- Mengatur rata kiri untuk nilai alamat -->
-                                    <p class="data-value">${employee.alamat}</p>
-                                </div>
-                                
                             </div>
                         </div>
+                        
+                        <!-- Riwayat Permasalahan di kartu pengguna -->
+                        ${problemListHtml}
+
                     </div>
-                `).join('');
+                `});
+
+                const resultsHtml = await Promise.all(resultHtmlPromises);
+                resultsContainer.innerHTML = resultsHtml.join('');
             }
 
             // FUNGSI UNTUK MENGHANDLE SUBMIT FORM KONTAK (SIMULASI)
@@ -1458,13 +1959,23 @@
                     document.getElementById('addEmployeeFormSection').classList.remove('hidden');
                     // Perbarui riwayat dan tombol
                     showPage('employeeInputPage-Form'); // Tambahkan state khusus untuk form input
+                    // Panggil toggleBackButton untuk memastikan tombol kembali di halaman Form disembunyikan
+                    toggleBackButton('employeeInputPage'); 
                 });
 
+                // REVISI: Tombol Batal akan menggunakan goBack() untuk kembali ke Data Karyawan Tersimpan
                 document.getElementById('cancelAddFormButton').addEventListener('click', () => {
+                    // Logika untuk menampilkan kembali list dan menyembunyikan form
                     document.getElementById('addEmployeeFormSection').classList.add('hidden');
                     document.getElementById('employeeListSection').classList.remove('hidden');
-                    // Kembali ke list
-                    goBack(); 
+                    
+                    // Cek jika halaman saat ini adalah state form, maka kita hapus dari riwayat
+                    if (navHistory[navHistory.length - 1] === 'employeeInputPage-Form') {
+                         navHistory.pop();
+                    }
+                    
+                    // Panggil toggleBackButton untuk memastikan tombol kembali di atas halaman Data Karyawan Tersimpan terlihat
+                    toggleBackButton('employeeInputPage');
                 });
                 
                 // Event listener untuk modal
@@ -1521,6 +2032,12 @@
             window.deleteSelectedEmployees = deleteSelectedEmployees;
             // Ekspor fungsi carousel
             window.changeSlide = changeSlide;
+            // Ekspor fungsi masalah karyawan
+            window.showProblemInputModal = showProblemInputModal;
+            window.hideProblemInputModal = hideProblemInputModal;
+            window.toggleProblemForm = toggleProblemForm;
+            window.saveEmployeeProblem = saveEmployeeProblem;
+            window.formatRupiah = formatRupiah; // Export fungsi Rupiah
         </script>
         
     </div>
